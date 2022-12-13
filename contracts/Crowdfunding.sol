@@ -12,7 +12,7 @@ contract Crowdfunding is AccessControl, Pausable {
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPDATER_ROLE = keccak256("UPDATER_ROLE");
 
-    struct Donator {
+    struct Donation {
         address donatorAddress;
         uint256 amountDonated;
     }
@@ -24,13 +24,25 @@ contract Crowdfunding is AccessControl, Pausable {
 
     struct VoteSession {
         bool isVotingInSession;
-        uint256 numberOfVotes;
+        //uint256 numberOfVotes; useless ? 
         uint256 positiveVotes;
         uint256 negativeVotes;
     }
 
+    struct ProjectData {
+        address owner;
+        address exchangeTokenAddress;
+        string name;
+        string assoName;
+        string[] teamMembers;
+        string description;
+        uint256 requiredAmount;
+        uint256 requiredVotePercentage; // must be in integer like 50% = 50 28% = 28
+    }
+
     //TODO support vote
     struct Project {
+        bool active;
         address owner;
         address exchangeTokenAddress;
         string name;
@@ -39,38 +51,68 @@ contract Crowdfunding is AccessControl, Pausable {
         string description;
         uint256 requiredAmount;
         uint256 currentAmount;
-        //
-        Treshold[] tresholds; // each treshold has its own budget like [10,20,30] this means the total budget is 10+20+30 //can add alter a function to add new tresholds
+        uint256 currentUnlockedAmount;
         uint256 currentTreshold;
+        uint256 nbOfTresholds;
+        uint256 requiredVotePercentage; // must be in integer like 50% = 50 28% = 28
     }
 
     address[] public supportedTokens;
     mapping(uint256 => Project) public projects; //get project by id
-    mapping(address => uint[]) public myProjects;
-    mapping(uint256 => mapping(address => bool)) public donatorsPerProjects;
-    mapping(address => mapping(uint256 => mapping(uint256 => bool))) public tresholdVoteFromAddress;
+    mapping(uint256 => mapping(uint => Treshold)) public projectsTresholds; //get project by id and treshold by id // each treshold has its own budget like [10,20,30] this means the total budget is 10+20+30 //can add alter a function to add new tresholds
+    //mapping from user to project by id to the amount donated
+    mapping(address => mapping(uint256 => uint)) public userDonations;
+    //mapping(uint256 => mapping(address => bool)) public donatorsPerProjects;
+    mapping(address => mapping(uint256 => mapping(uint256 => bool)))
+        public tresholdVoteFromAddress;
 
     mapping(address => mapping(address => uint256)) public availableWithdrawals;
 
     Counters.Counter private idCounter;
 
+    ///DONE
     constructor() {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
         _grantRole(UPDATER_ROLE, msg.sender);
     }
 
-    function CreateProject(Project calldata _project) public {
+    ///DONE
+    function CreateProject(ProjectData calldata _projectData, Treshold[] calldata tresholds) public {
         require(
-            IsTokenSupported(_project.exchangeTokenAddress),
+            IsTokenSupported(_projectData.exchangeTokenAddress),
             "Token not supported"
         );
+        require(
+            tresholds.length > 0,
+            "Need at least one Treshold"
+        );
         uint256 currentId = idCounter.current();
-        projects[currentId] = _project;
+        projects[currentId] = Project(
+            true,
+            _projectData.owner,
+            _projectData.exchangeTokenAddress,
+            _projectData.name,
+            _projectData.assoName,
+            _projectData.teamMembers,
+            _projectData.description,
+            _projectData.requiredAmount,
+            0,
+            0,
+            0,
+            tresholds.length,
+            _projectData.requiredVotePercentage
+        );
+
+        for(uint i = 0; i< tresholds.length; i ++){
+            projectsTresholds[currentId][i] = tresholds[i];
+        }
+
         idCounter.increment();
     }
 
-    function GoToNextTreshold(uint256 id) public {
+    //check conditions for project ID and advance to next treshold
+    /*function GoToNextTreshold(uint256 id) public {
         Project memory project = projects[id];
         require(msg.sender == project.owner, "You are not allowed");
         require(
@@ -78,27 +120,24 @@ contract Crowdfunding is AccessControl, Pausable {
             "Project Funded"
         );
 
+        //TODO check back on this 
         if (
             project.currentAmount >=
             project.tresholds[project.currentTreshold].budget
         ) {
             UnlockNextTreshold(id);
         }
-    }
+    }*/
 
-    //TODO Possible DOS because of Array
+    //DONE
+    //Returns if a user is a donator of project id
     function IsDonator(address user, uint256 id) public view returns (bool) {
-        Donator[] memory donators = projects[id].donators;
-
-        for (uint256 i = 0; i < donators.length; i++) {
-            if (donators[i].donatorAddress == user) {
-                return true;
-            }
-        }
-
-        return false;
+        return userDonations[user][id] > 0;
     }
 
+    ///DONE
+    //TODO dos issue
+    //check if token token is supported by the contract as an exchange token
     function IsTokenSupported(address token) public view returns (bool) {
         address[] memory tempSupportedTokens = supportedTokens;
 
@@ -111,46 +150,82 @@ contract Crowdfunding is AccessControl, Pausable {
         return false;
     }
 
+    ///DONE
+    //donate amount amount of tokens to project id
+    function DonateToProject(uint id, uint amount) external {
+        require(amount>0, "Min amount is 1");
+        Project memory project = projects[id];
+        require(project.active, "Project not Active");
+        
+        address tokenSupported = project.exchangeTokenAddress;
+
+        require(IERC20(tokenSupported).allowance(msg.sender, address(this)) >= amount, "Need to approve allowance first");
+        IERC20(tokenSupported).transferFrom(msg.sender, address(this), amount);
+
+        userDonations[msg.sender][id] += amount;
+        projects[id].currentAmount += amount;
+    }
+
+    //Starts the treshold vote of project id
     function StartTresholdVoting(uint256 id) external {
         Project memory project = projects[id];
+        Treshold memory currentTreshold = projectsTresholds[id][project.currentTreshold];
         require(msg.sender == project.owner, "You are not allowed");
         require(
-            !project
-                .tresholds[project.currentTreshold]
+            !currentTreshold
                 .voteSession
                 .isVotingInSession,
             "Already in Voting Session"
         );
         require(
-            project.currentTreshold < project.tresholds.length + 1,
+            project.currentTreshold < project.nbOfTresholds + 1,
             "Project Funded"
         );
+
         require(
-            project.currentAmount >=
-                project.tresholds[project.currentTreshold].budget,
+            project.currentAmount - project.currentUnlockedAmount  >=
+                currentTreshold.budget,
             "Treshold not reached yet"
         );
 
-        projects[id]
-            .tresholds[project.currentTreshold]
+        projectsTresholds[id][project.currentTreshold]
             .voteSession
             .isVotingInSession = true;
     }
 
-    // we vote + or - for the current treshold
-    function VoteForTreshold(uint256 id, bool vote) external {
+    //Ends the treshold vote of project id
+    function EndTresholdVoting(uint256 id) external {
         Project memory project = projects[id];
-        require(IsDonator(msg.sender, id), "Only Donators can vote");
+        Treshold memory currentTreshold = projectsTresholds[id][project.currentTreshold];
+        require(msg.sender == project.owner, "You are not allowed");
+        require(
+            currentTreshold
+                .voteSession
+                .isVotingInSession,
+            "Not in Voting Session"
+        );
 
-        VoteSession memory vs = project
-            .tresholds[project.currentTreshold]
-            .voteSession;
-        vs.numberOfVotes++;
-        vote ? vs.positiveVotes++ : vs.negativeVotes++;
+        projectsTresholds[id][project.currentTreshold]
+            .voteSession
+            .isVotingInSession = false;
 
-        projects[id].tresholds[project.currentTreshold].voteSession = vs;
+        DeliberateVote(id);
     }
 
+    // Donator votes for current treshold voting session of project id
+    function VoteForTreshold(uint256 id, bool vote) external {
+        Project memory project = projects[id];
+        Treshold memory currentTreshold = projectsTresholds[id][project.currentTreshold];
+        require(IsDonator(msg.sender, id), "Only Donators can vote");
+
+        VoteSession memory vs = currentTreshold.voteSession;
+        vote ? vs.positiveVotes++ : vs.negativeVotes++;
+
+        projectsTresholds[id][project.currentTreshold].voteSession = vs;
+        tresholdVoteFromAddress[msg.sender][id][project.currentTreshold] = true;
+    }
+
+    //TODO Add withdrawer role 
     function WithdrawFunds(address exchangeTokenAddress) external {
         uint256 amountToWithdraw = availableWithdrawals[msg.sender][
             exchangeTokenAddress
@@ -159,6 +234,7 @@ contract Crowdfunding is AccessControl, Pausable {
         IERC20(exchangeTokenAddress).transfer(msg.sender, amountToWithdraw);
     }
 
+    ///DONE
     function AddNewSupportedToken(address tokenAddress)
         external
         onlyRole(UPDATER_ROLE)
@@ -166,17 +242,41 @@ contract Crowdfunding is AccessControl, Pausable {
         supportedTokens.push(tokenAddress);
     }
 
-    function UnlockNextTreshold(uint256 id) private {
+    //Deliberate vote of project id and unlocks next treshold if there is 
+    function DeliberateVote(uint256 id) private {
         Project memory project = projects[id];
-        AddWithdrawalAmount(
-            project.owner,
-            project.tresholds[project.currentTreshold].budget,
-            project.exchangeTokenAddress
-        );
+        Treshold memory currentTreshold = projectsTresholds[id][project.currentTreshold];
 
+        uint positiveVotes = currentTreshold.voteSession.positiveVotes;
+        uint negativeVotes = currentTreshold.voteSession.negativeVotes;
+        uint votesPercentage = project.requiredVotePercentage;
+
+        projectsTresholds[id][project.currentTreshold]
+            .voteSession
+            .isVotingInSession = false;
+
+        if(positiveVotes*10000/(negativeVotes*100) > votesPercentage){
+            if(project.currentTreshold < project.nbOfTresholds - 1){
+                UnlockNextTreshold(id);
+            }
+
+            AddWithdrawalAmount(
+                project.owner,
+                currentTreshold.budget,
+                project.exchangeTokenAddress
+            );
+        }
+        else{
+            //cancel vote and stay on current treshold
+        }
+    }
+
+    //go to Next treshold of project id
+    function UnlockNextTreshold(uint256 id) private {
         projects[id].currentTreshold++;
     }
 
+    //add withdrawal amount amount of token exchangeTokenAddress to owner address 
     function AddWithdrawalAmount(
         address owner,
         uint256 amount,
