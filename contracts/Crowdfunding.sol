@@ -11,6 +11,8 @@ contract Crowdfunding is AccessControl, Pausable {
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPDATER_ROLE = keccak256("UPDATER_ROLE");
+    bytes32 public constant WITHDRAWER_ROLE = keccak256("WITHDRAWER_ROLE");
+    uint16 public donationFee; // must be in basis points like 1% = 100 / 100% = 10000 / 0.01% = 1
 
     struct Donation {
         address donatorAddress;
@@ -37,7 +39,7 @@ contract Crowdfunding is AccessControl, Pausable {
         string[] teamMembers;
         string description;
         uint256 requiredAmount;
-        uint256 requiredVotePercentage; // must be in integer like 50% = 50 28% = 28
+        uint256 requiredVotePercentage; // must be in basis points like 1% = 100 / 100% = 10000 / 0.01% = 1
     }
 
     //TODO support vote
@@ -65,7 +67,6 @@ contract Crowdfunding is AccessControl, Pausable {
     //mapping(uint256 => mapping(address => bool)) public donatorsPerProjects;
     mapping(address => mapping(uint256 => mapping(uint256 => bool)))
         public tresholdVoteFromAddress;
-
     mapping(address => mapping(address => uint256)) public availableWithdrawals;
 
     Counters.Counter private idCounter;
@@ -75,6 +76,7 @@ contract Crowdfunding is AccessControl, Pausable {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
         _grantRole(UPDATER_ROLE, msg.sender);
+        _grantRole(WITHDRAWER_ROLE, msg.sender);
     }
 
     ///DONE
@@ -111,24 +113,6 @@ contract Crowdfunding is AccessControl, Pausable {
         idCounter.increment();
     }
 
-    //check conditions for project ID and advance to next treshold
-    /*function GoToNextTreshold(uint256 id) public {
-        Project memory project = projects[id];
-        require(msg.sender == project.owner, "You are not allowed");
-        require(
-            project.currentTreshold < project.tresholds.length + 1,
-            "Project Funded"
-        );
-
-        //TODO check back on this 
-        if (
-            project.currentAmount >=
-            project.tresholds[project.currentTreshold].budget
-        ) {
-            UnlockNextTreshold(id);
-        }
-    }*/
-
     //DONE
     //Returns if a user is a donator of project id
     function IsDonator(address user, uint256 id) public view returns (bool) {
@@ -160,6 +144,7 @@ contract Crowdfunding is AccessControl, Pausable {
             project.currentAmount + amount <= project.requiredAmount,
             "Cant go above Donation Goal"
         );
+        require((amount / 10000) * 10000 == amount, "Amount too small");
 
         address tokenSupported = project.exchangeTokenAddress;
 
@@ -170,8 +155,10 @@ contract Crowdfunding is AccessControl, Pausable {
         );
         IERC20(tokenSupported).transferFrom(msg.sender, address(this), amount);
 
-        userDonations[msg.sender][id] += amount;
-        projects[id].currentAmount += amount;
+        uint transactionFee = amount * donationFee / 10000;
+
+        userDonations[msg.sender][id] += amount - transactionFee;
+        projects[id].currentAmount += amount - transactionFee;
     }
 
     //DONE
@@ -228,11 +215,15 @@ contract Crowdfunding is AccessControl, Pausable {
         Treshold memory currentTreshold = projectsTresholds[id][
             project.currentTreshold
         ];
+        bool hasVoted = tresholdVoteFromAddress[msg.sender][id][
+            project.currentTreshold
+        ];
         require(IsDonator(msg.sender, id), "Only Donators can vote");
         require(
             currentTreshold.voteSession.isVotingInSession,
             "Not in Voting Session"
         );
+        require(!hasVoted, "Can Only Vote Once");
 
         VoteSession memory vs = currentTreshold.voteSession;
         vote ? vs.positiveVotes++ : vs.negativeVotes++;
@@ -243,6 +234,7 @@ contract Crowdfunding is AccessControl, Pausable {
 
     //TODO Add withdrawer role
     function WithdrawFunds(address exchangeTokenAddress) external {
+        require(IsTokenSupported(exchangeTokenAddress), "Token not supported");
         uint256 amountToWithdraw = availableWithdrawals[msg.sender][
             exchangeTokenAddress
         ];
@@ -258,6 +250,11 @@ contract Crowdfunding is AccessControl, Pausable {
         supportedTokens.push(tokenAddress);
     }
 
+    function SetDonationFee(uint16 newFee) external onlyRole(UPDATER_ROLE){
+        require(newFee < 10000,"Cant go above 10000");
+        donationFee = newFee;
+    }
+
     //Deliberate vote of project id and unlocks next treshold if there is
     function DeliberateVote(uint256 id) private {
         Project memory project = projects[id];
@@ -265,38 +262,27 @@ contract Crowdfunding is AccessControl, Pausable {
             project.currentTreshold
         ];
 
-        uint256 positiveVotes = currentTreshold.voteSession.positiveVotes;
-        uint256 negativeVotes = currentTreshold.voteSession.negativeVotes;
+        int256 positiveVotes = int256(
+            currentTreshold.voteSession.positiveVotes
+        );
+        int256 negativeVotes = int256(
+            currentTreshold.voteSession.negativeVotes
+        );
+        int256 finalAmount = positiveVotes - negativeVotes;
         require(
             positiveVotes + negativeVotes > 0,
             "Cant deliberate without votes"
         );
-        uint256 votesPercentage = project.requiredVotePercentage;
+        int256 votesPercentage = int256(project.requiredVotePercentage);
 
         projectsTresholds[id][project.currentTreshold]
             .voteSession
             .isVotingInSession = false;
 
-        if (negativeVotes > 0) {
-            if (
-                (positiveVotes * 10000) / (negativeVotes * 100) >
-                votesPercentage
-            ) {
-                if (project.currentTreshold < project.nbOfTresholds - 1) {
-                    projects[id].currentTreshold++;
-                } else {
-                    projects[id].active = false;
-                }
-
-                AddWithdrawalAmount(
-                    project.owner,
-                    currentTreshold.budget,
-                    project.exchangeTokenAddress
-                );
-            } else {
-                //cancel vote and stay on current treshold
-            }
-        } else {
+        if (
+            (finalAmount * 10000) / (positiveVotes + negativeVotes) >
+            votesPercentage
+        ) {
             if (project.currentTreshold < project.nbOfTresholds - 1) {
                 projects[id].currentTreshold++;
             } else {
@@ -308,6 +294,8 @@ contract Crowdfunding is AccessControl, Pausable {
                 currentTreshold.budget,
                 project.exchangeTokenAddress
             );
+        } else {
+            //cancel vote and stay on current treshold
         }
     }
 
