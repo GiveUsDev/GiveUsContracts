@@ -171,6 +171,14 @@ describe("Crowdfunding Contract", function () {
     return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, mintAmount, donatedAmount, projectID };
   }
 
+  async function donateToProject3AndHasVoted() {
+    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(donateToProject3AndVote);
+    const projectID = 0;
+    const voteValue = true;
+    await crowdfunding.connect(owner).voteForTreshold(0, true);
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, projectID, voteValue};
+  }
+
   describe("Deployment", function () {
     describe("USDC mint(uint amount)", function () {
       it("Should mint amount", async function () {
@@ -686,23 +694,57 @@ describe("Crowdfunding Contract", function () {
       it("Shouldnt getProjectTresholds, revert : Invalid Project Id", async function () {
         const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
         const invalidProjectID = 100;
-        await expectRevert(crowdfunding.connect(owner).getProjectTresholds(invalidProjectID,0), "Invalid Project Id");
+        await expectRevert(crowdfunding.connect(owner).getProjectTresholds(invalidProjectID, 0), "Invalid Project Id");
       });
 
       it("Shouldnt getProjectTresholds, revert : Invalid Treshold Id", async function () {
         const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
         const invalidTresholdID = 100;
-        await expectRevert(crowdfunding.connect(owner).getProjectTresholds(projectID,invalidTresholdID), "Invalid Treshold Id");
+        await expectRevert(crowdfunding.connect(owner).getProjectTresholds(projectID, invalidTresholdID), "Invalid Treshold Id");
       });
 
       it("Should getProjectTresholds", async function () {
         const { crowdfunding, owner, projectID, tresholds } = await loadFixture(createProjectAndDonateFixture);
-        const treshold = await crowdfunding.connect(owner).getProjectTresholds(projectID,0);
+        const treshold = await crowdfunding.connect(owner).getProjectTresholds(projectID, 0);
         expect(treshold.budget).to.be.equal(tresholds[0].budget);
         expect(treshold.voteSession.isVotingInSession).to.be.equal(tresholds[0].voteSession.isVotingInSession);
         expect(treshold.voteSession.positiveVotes).to.be.equal(tresholds[0].voteSession.positiveVotes);
         expect(treshold.voteSession.negativeVotes).to.be.equal(tresholds[0].voteSession.negativeVotes);
       });
     });
+
+    describe("getTresholdVoteFromAddress(address voterAddress, uint256 projectId, uint256 tresholdId)", function () {
+    it("Shouldnt getTresholdVoteFromAddress, revert : Invalid Project Id", async function () {
+      const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
+      const invalidProjectID = 100;
+      await expectRevert(crowdfunding.connect(owner).getTresholdVoteFromAddress(owner.address, invalidProjectID, 0), "Invalid Project Id");
+    });
+
+    it("Shouldnt getTresholdVoteFromAddress, revert : Invalid Treshold Id", async function () {
+      const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
+      const invalidTresholdID = 100;
+      await expectRevert(crowdfunding.connect(owner).getTresholdVoteFromAddress(owner.address, projectID, invalidTresholdID), "Invalid Treshold Id");
+    });
+
+    it("Should getTresholdVoteFromAddress", async function () {
+      const { crowdfunding, owner, projectID, tresholds, voteValue } = await loadFixture(donateToProject3AndHasVoted);
+      const tresholdVote = await crowdfunding.connect(owner).getTresholdVoteFromAddress(owner.address, projectID, 0);
+      expect(tresholdVote).to.be.equal(voteValue);
+    });
   });
+
+  describe("getUserDonations(address donatorAddress, uint256 projectId)", function () {
+    it("Shouldnt getUserDonations, revert : Invalid Project Id", async function () {
+      const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
+      const invalidProjectID = 100;
+      await expectRevert(crowdfunding.connect(owner).getUserDonations(owner.address, invalidProjectID), "Invalid Project Id");
+    });
+
+    it("Should getUserDonations", async function () {
+      const { crowdfunding, owner, projectID, donatedAmount } = await loadFixture(createProjectAndDonateFixture);
+      const donationAmount = await crowdfunding.connect(owner).getUserDonations(owner.address, projectID)
+      expect(donationAmount).to.be.equal(donatedAmount);
+    });
+  });
+});
 });
