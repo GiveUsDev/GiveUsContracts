@@ -406,6 +406,11 @@ describe("Crowdfunding Contract", function () {
       });
     });
     describe("isDonator(address user, uint256 id)", function () {
+      it("Shouldnt Return , revert : Invalid Project Id", async function () {
+        const { crowdfunding, owner } = await loadFixture(createProjectAndDonateFixture);
+        const invalidProjectID = 100;
+        await expectRevert(crowdfunding.isDonator(owner.address, invalidProjectID), "Invalid Project Id");
+      });
       it("Should Return true", async function () {
         const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
         expect(await crowdfunding.isDonator(owner.address, projectID)).to.be.equal(true);
@@ -620,7 +625,6 @@ describe("Crowdfunding Contract", function () {
       });
     });
 
-
     describe("UpdateProjectStatus(uint256 projectId, bool newStatus)", function () {
       it("Shouldnt UpdateProjectStatus, revert : Access Control", async function () {
         const { crowdfunding, addr1, projectID } = await loadFixture(createProjectAndDonateFixture);
@@ -661,6 +665,43 @@ describe("Crowdfunding Contract", function () {
 
         expect(await crowdfunding.connect(owner).UpdateProjectStatus(projectID, false))
           .to.emit(crowdfunding, 'ProjectStatusUpdated').withArgs(projectID, false);
+      });
+    });
+
+    describe("getProject(uint256 projectId)", function () {
+      it("Shouldnt getProject, revert : Invalid Project Id", async function () {
+        const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
+        const invalidProjectID = 100;
+        await expectRevert(crowdfunding.connect(owner).getProject(invalidProjectID), "Invalid Project Id");
+      });
+
+      it("Should getProject", async function () {
+        const { crowdfunding, owner, projectID, projectData } = await loadFixture(createProjectAndDonateFixture);
+        const project = await crowdfunding.connect(owner).getProject(projectID);
+        expect(project.assoName).to.be.equal(projectData.assoName);
+      });
+    });
+
+    describe("getProjectTresholds(uint256 projectId, uint256 tresholdId)", function () {
+      it("Shouldnt getProjectTresholds, revert : Invalid Project Id", async function () {
+        const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
+        const invalidProjectID = 100;
+        await expectRevert(crowdfunding.connect(owner).getProjectTresholds(invalidProjectID,0), "Invalid Project Id");
+      });
+
+      it("Shouldnt getProjectTresholds, revert : Invalid Treshold Id", async function () {
+        const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
+        const invalidTresholdID = 100;
+        await expectRevert(crowdfunding.connect(owner).getProjectTresholds(projectID,invalidTresholdID), "Invalid Treshold Id");
+      });
+
+      it("Should getProjectTresholds", async function () {
+        const { crowdfunding, owner, projectID, tresholds } = await loadFixture(createProjectAndDonateFixture);
+        const treshold = await crowdfunding.connect(owner).getProjectTresholds(projectID,0);
+        expect(treshold.budget).to.be.equal(tresholds[0].budget);
+        expect(treshold.voteSession.isVotingInSession).to.be.equal(tresholds[0].voteSession.isVotingInSession);
+        expect(treshold.voteSession.positiveVotes).to.be.equal(tresholds[0].voteSession.positiveVotes);
+        expect(treshold.voteSession.negativeVotes).to.be.equal(tresholds[0].voteSession.negativeVotes);
       });
     });
   });
