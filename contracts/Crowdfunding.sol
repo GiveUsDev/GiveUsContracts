@@ -75,7 +75,7 @@ contract Crowdfunding is AccessControl, Pausable {
     event ProjectStatusUpdated(uint256 projectId, bool newStatus);
 
     modifier validProjectId(uint256 id) {
-        require(idCounter.current() > id, "Invalid Id");
+        require(idCounter.current() > id, "Invalid Project Id");
         _;
     }
 
@@ -114,7 +114,7 @@ contract Crowdfunding is AccessControl, Pausable {
      * @notice Struct used to create a new project
      */
     struct Project {
-        bool active;
+        bool isActive;
         address owner;
         address exchangeTokenAddress;
         string name;
@@ -321,7 +321,7 @@ contract Crowdfunding is AccessControl, Pausable {
     {
         require(amount > 0, "Min amount is 1");
         Project memory project = projects[projectId];
-        require(project.active, "Project not Active");
+        require(project.isActive, "Project not Active");
         require((amount / 10000) * 10000 == amount, "Amount too small");
 
         address tokenSupported = project.exchangeTokenAddress;
@@ -480,7 +480,7 @@ contract Crowdfunding is AccessControl, Pausable {
         onlyRole(UPDATER_ROLE)
         validProjectId(projectId)
     {
-        projects[projectId].active = newStatus;
+        projects[projectId].isActive = newStatus;
         emit ProjectStatusUpdated(projectId, newStatus);
     }
 
@@ -499,7 +499,7 @@ contract Crowdfunding is AccessControl, Pausable {
             "Already in Voting Session"
         );
 
-        require(project.active, "Project Inactive");
+        require(project.isActive, "Project Inactive");
 
         require(
             project.currentAmount >= currentTreshold.budget,
