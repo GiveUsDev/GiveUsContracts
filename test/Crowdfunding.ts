@@ -3,7 +3,6 @@ import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 const { BN, expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
-const waffle = require('ethereum-waffle');
 
 
 describe("Crowdfunding Contract", function () {
