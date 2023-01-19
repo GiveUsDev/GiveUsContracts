@@ -67,6 +67,13 @@ contract Crowdfunding is AccessControl, Pausable {
      */
     event DonationFeeUpdated(uint256 projectId, uint16 newFee);
 
+    /**
+     * @notice Event emited whenever a project is deactivated
+     * @param projectId The project's ID
+     * @param newStatus The new status of the project
+     */
+    event ProjectStatusUpdated(uint256 projectId, bool newStatus);
+
     modifier validProjectId(uint256 id) {
         require(idCounter.current() > id, "Invalid Id");
         _;
@@ -448,6 +455,11 @@ contract Crowdfunding is AccessControl, Pausable {
         emit NewSupportedTokenAdded(tokenAddress);
     }
 
+    /**
+     * @notice Function that sets the donation fee for a project
+     * @param projectId ID of the project
+     * @param newFee New fee to set
+     */
     function setDonationFee(uint256 projectId, uint16 newFee)
         external
         onlyRole(UPDATER_ROLE)
@@ -456,6 +468,20 @@ contract Crowdfunding is AccessControl, Pausable {
         require(newFee < 10000, "Cant go above 10000");
         projects[projectId].donationFee = newFee;
         emit DonationFeeUpdated(projectId, newFee);
+    }
+
+    /**
+     * @notice Function that sets the project status
+     * @param projectId ID of the project
+     * @param newStatus New status to set
+     */
+    function UpdateProjectStatus(uint256 projectId, bool newStatus)
+        external
+        onlyRole(UPDATER_ROLE)
+        validProjectId(projectId)
+    {
+        projects[projectId].active = newStatus;
+        emit ProjectStatusUpdated(projectId, newStatus);
     }
 
     function startTresholdVoting(uint256 id)
