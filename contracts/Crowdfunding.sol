@@ -67,6 +67,17 @@ contract Crowdfunding is AccessControl, Pausable {
      */
     event DonationFeeUpdated(uint256 projectId, uint16 newFee);
 
+    modifier validProjectId(uint256 id) {
+        require(idCounter.current() > id, "Invalid Id");
+        _;
+    }
+
+    modifier validTresholdId(uint256 projectId, uint256 tresholdId) {
+        Project memory project = projects[projectId];
+        require(project.nbOfTresholds > tresholdId, "Invalid Treshold Id");
+        _;
+    }
+
     struct Treshold {
         uint256 budget;
         VoteSession voteSession;
@@ -116,6 +127,8 @@ contract Crowdfunding is AccessControl, Pausable {
     mapping(address => mapping(uint256 => uint256)) private userDonations;
     mapping(address => mapping(uint256 => mapping(uint256 => bool)))
         private tresholdVoteFromAddress;
+    mapping(uint256 => mapping(uint256 => address[]))
+        private voterArrayForTreshold;
     mapping(address => mapping(address => uint256))
         private availableWithdrawals;
 
@@ -174,11 +187,16 @@ contract Crowdfunding is AccessControl, Pausable {
 
     /**
      * @notice Function returning if a user is a donator or not
-     * @param user Data used to create project
-     * @param id Array of threshold for the project
+     * @param user user address
+     * @param id project id
      * @return bool is user a donator
      */
-    function isDonator(address user, uint256 id) public view returns (bool) {
+    function isDonator(address user, uint256 id)
+        public
+        view
+        validProjectId(id)
+        returns (bool)
+    {
         return userDonations[user][id] > 0;
     }
 
@@ -199,6 +217,7 @@ contract Crowdfunding is AccessControl, Pausable {
     function getProject(uint256 projectId)
         external
         view
+        validProjectId(projectId)
         returns (Project memory)
     {
         return projects[projectId];
@@ -213,6 +232,8 @@ contract Crowdfunding is AccessControl, Pausable {
     function getProjectTresholds(uint256 projectId, uint256 tresholdId)
         external
         view
+        validProjectId(projectId)
+        validTresholdId(projectId, tresholdId)
         returns (Treshold memory)
     {
         return projectsTresholds[projectId][tresholdId];
@@ -227,6 +248,7 @@ contract Crowdfunding is AccessControl, Pausable {
     function getUserDonations(address donatorAddress, uint256 projectId)
         external
         view
+        validProjectId(projectId)
         returns (uint256)
     {
         return userDonations[donatorAddress][projectId];
@@ -243,7 +265,13 @@ contract Crowdfunding is AccessControl, Pausable {
         address voterAddress,
         uint256 projectId,
         uint256 tresholdId
-    ) external view returns (bool) {
+    )
+        external
+        view
+        validProjectId(projectId)
+        validTresholdId(projectId, tresholdId)
+        returns (bool)
+    {
         return tresholdVoteFromAddress[voterAddress][projectId][tresholdId];
     }
 
@@ -282,6 +310,7 @@ contract Crowdfunding is AccessControl, Pausable {
     function donateToProject(uint256 projectId, uint256 amount)
         external
         whenNotPaused
+        validProjectId(projectId)
     {
         require(amount > 0, "Min amount is 1");
         Project memory project = projects[projectId];
@@ -295,7 +324,7 @@ contract Crowdfunding is AccessControl, Pausable {
                 amount,
             "Need to approve allowance first"
         );
-        
+
         uint256 transactionFee = (amount * project.donationFee) / 10000;
         uint256 donationAmount = amount - transactionFee;
 
@@ -333,6 +362,7 @@ contract Crowdfunding is AccessControl, Pausable {
         external
         onlyRole(UPDATER_ROLE)
         whenNotPaused
+        validProjectId(id)
     {
         Project memory project = projects[id];
         Treshold memory currentTreshold = projectsTresholds[id][
@@ -355,7 +385,11 @@ contract Crowdfunding is AccessControl, Pausable {
      * @param id ID of the project
      * @param vote true for positive vote, false for negative vote
      */
-    function voteForTreshold(uint256 id, bool vote) external whenNotPaused {
+    function voteForTreshold(uint256 id, bool vote)
+        external
+        whenNotPaused
+        validProjectId(id)
+    {
         Project memory project = projects[id];
         Treshold memory currentTreshold = projectsTresholds[id][
             project.currentTreshold
@@ -375,6 +409,7 @@ contract Crowdfunding is AccessControl, Pausable {
 
         projectsTresholds[id][project.currentTreshold].voteSession = vs;
         tresholdVoteFromAddress[msg.sender][id][project.currentTreshold] = true;
+        voterArrayForTreshold[id][project.currentTreshold].push(msg.sender);
     }
 
     /**
@@ -416,13 +451,18 @@ contract Crowdfunding is AccessControl, Pausable {
     function setDonationFee(uint256 projectId, uint16 newFee)
         external
         onlyRole(UPDATER_ROLE)
+        validProjectId(projectId)
     {
         require(newFee < 10000, "Cant go above 10000");
         projects[projectId].donationFee = newFee;
         emit DonationFeeUpdated(projectId, newFee);
     }
 
-    function startTresholdVoting(uint256 id) private whenNotPaused {
+    function startTresholdVoting(uint256 id)
+        private
+        whenNotPaused
+        validProjectId(id)
+    {
         Project memory project = projects[id];
         Treshold memory currentTreshold = projectsTresholds[id][
             project.currentTreshold
@@ -450,7 +490,7 @@ contract Crowdfunding is AccessControl, Pausable {
             .isVotingInSession = true;
     }
 
-    function deliberateVote(uint256 id) private {
+    function deliberateVote(uint256 id) private validProjectId(id) {
         Project memory project = projects[id];
         Treshold memory currentTreshold = projectsTresholds[id][
             project.currentTreshold
@@ -485,8 +525,34 @@ contract Crowdfunding is AccessControl, Pausable {
                 project.exchangeTokenAddress
             );
         } else {
-            //cancel vote and stay on current treshold
+            resetVoteSession(id);
         }
+    }
+
+    //cancel vote and stay on current treshold
+    function resetVoteSession(uint256 id) private validProjectId(id) {
+        Project memory project = projects[id];
+        Treshold memory currentTreshold = projectsTresholds[id][
+            project.currentTreshold
+        ];
+
+        currentTreshold.voteSession.positiveVotes = 0;
+        currentTreshold.voteSession.negativeVotes = 0;
+        currentTreshold.voteSession.isVotingInSession = false;
+        projectsTresholds[id][project.currentTreshold] = currentTreshold;
+
+        for (
+            uint256 i = 0;
+            i < voterArrayForTreshold[id][project.currentTreshold].length;
+            i++
+        ) {
+            address voter = voterArrayForTreshold[id][project.currentTreshold][
+                i
+            ];
+            tresholdVoteFromAddress[voter][id][project.currentTreshold] = false;
+        }
+
+        delete voterArrayForTreshold[id][project.currentTreshold];
     }
 
     function addWithdrawalAmount(
