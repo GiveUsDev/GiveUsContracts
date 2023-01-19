@@ -3,9 +3,12 @@
 Tests almost done. Analysed with slither.
 
 
-Test Coverage : 
+Test Coverage :
+ 
   Crowdfunding Contract
+  
     Deployment
+    
       USDC mint(uint amount)
         ✔ Should mint amount (200ms)
       Constructor()
@@ -67,16 +70,13 @@ Test Coverage :
         ✔ Shouldnt change DonationFee, revert : Access Control
         ✔ Shouldnt change DonationFee & emit event
         ✔ Should change DonationFee (102ms)
+        
+    47 passing (2s)
 
 
-  47 passing (2s)
-
--------------------|----------|----------|----------|----------|----------------|
 File               |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
 -------------------|----------|----------|----------|----------|----------------|
  contracts/        |      100 |    84.21 |      100 |      100 |                |
   Crowdfunding.sol |      100 |    84.21 |      100 |      100 |                |
   USDC.sol         |      100 |      100 |      100 |      100 |                |
--------------------|----------|----------|----------|----------|----------------|
 All files          |      100 |    84.21 |      100 |      100 |                |
--------------------|----------|----------|----------|----------|----------------|
