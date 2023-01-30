@@ -567,14 +567,16 @@ contract Crowdfunding is AccessControl, Pausable {
         currentTreshold.voteSession.isVotingInSession = false;
         projectsTresholds[id][project.currentTreshold] = currentTreshold;
 
+        address[] memory tempVoterArrayForTreshold = voterArrayForTreshold[id][
+            project.currentTreshold];
+        uint lenght = voterArrayForTreshold[id][project.currentTreshold].length;
+
         for (
             uint256 i = 0;
-            i < voterArrayForTreshold[id][project.currentTreshold].length;
+            i < lenght;
             i++
         ) {
-            address voter = voterArrayForTreshold[id][project.currentTreshold][
-                i
-            ];
+            address voter = tempVoterArrayForTreshold[i];
             tresholdVoteFromAddress[voter][id][project.currentTreshold] = false;
         }
 
