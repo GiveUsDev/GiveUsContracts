@@ -2,11 +2,15 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import 'solidity-coverage';
 import 'hardhat-abi-exporter';
-import "@nomicfoundation/hardhat-chai-matchers";
-import "@nomiclabs/hardhat-ethers";
+import 'hardhat-gas-reporter';
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.16",
+  solidity: {
+    version: "0.8.17",
+    settings: {
+      optimizer: {enabled: true}
+    }
+  },
   abiExporter: {
     path: './src/abi',
     runOnCompile: true,
@@ -14,6 +18,9 @@ const config: HardhatUserConfig = {
     flat: true,
     spacing: 2,
     pretty: true
+  },
+  gasReporter: {
+    enabled: true
   }
 };
 
