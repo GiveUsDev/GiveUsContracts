@@ -13,7 +13,7 @@ import {ICrowdfunding} from "./ICrowdfunding.sol";
  * @author Ludovic Domingues
  * @notice Contract used for Looting Plateform
  */
-contract Crowdfunding is ICrowdfunding, Initializable, AccessControlUpgradeable, PausableUpgradeable {
+contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeable, PausableUpgradeable {
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
     /**
@@ -105,8 +105,6 @@ contract Crowdfunding is ICrowdfunding, Initializable, AccessControlUpgradeable,
             0,
             tresholds.length,
             projectData.requiredVotePercentage,
-            projectData.voteCooldown, //TODO add require for voteCooldown
-            0,
             projectData.donationFee
         );
 
@@ -473,18 +471,6 @@ contract Crowdfunding is ICrowdfunding, Initializable, AccessControlUpgradeable,
         emit ProjectStatusUpdated(projectId, newStatus);
     }
 
-    function UpdateProjectVoteCooldown(uint256 projectId, uint256 newCooldown)
-        external
-        payable
-        virtual
-        override
-        onlyRole(UPDATER_ROLE)
-        validProjectId(projectId)
-    {
-        projects[projectId].voteCooldown = newCooldown;
-        emit ProjectVoteCooldownUpdated(projectId, newCooldown);
-    }
-
     function startTresholdVoting(uint256 id)
         private
         whenNotPaused
@@ -584,12 +570,6 @@ contract Crowdfunding is ICrowdfunding, Initializable, AccessControlUpgradeable,
         }
 
         delete voterArrayForTreshold[id][project.currentTreshold];
-
-        uint256 newCooldown = block.timestamp + project.voteCooldown;
-
-        projects[id].currentVoteCooldown = newCooldown;
-
-        emit VoteSessionReset(id, project.currentTreshold, newCooldown);
     }
 
     function addWithdrawalAmount(
@@ -600,10 +580,14 @@ contract Crowdfunding is ICrowdfunding, Initializable, AccessControlUpgradeable,
         availableWithdrawals[owner][exchangeTokenAddress] += amount;
     }
 
-    /**
-     * @dev This empty reserved space is put in place to allow future versions to add new
-     * variables without shifting down storage in the inheritance chain.
-     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
-     */
-    uint256[46] private __gap;
+    uint256 private myNewvariable;
+    uint256[45] private __gap;
+
+    function getMyNewvariable () public view returns (uint256) {
+        return myNewvariable;
+    }
+
+    function setMyNewvariable (uint newvar) public {
+        myNewvariable = newvar;
+    }
 }

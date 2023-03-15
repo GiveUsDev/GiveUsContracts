@@ -81,6 +81,10 @@ interface ICrowdfunding {
      */
     event ProjectStatusUpdated(uint256 projectId, uint256 newStatus);
 
+    event ProjectVoteCooldownUpdated(uint256 projectId, uint256 newCooldown);
+
+    event VoteSessionReset(uint256 projectId, uint256 projectTreshold, uint256 currentCooldown);
+
     struct Treshold {
         uint256 budget;
         VoteSession voteSession;
@@ -103,6 +107,7 @@ interface ICrowdfunding {
         string description;
         uint256 requiredAmount;
         uint256 requiredVotePercentage; // must be in basis points like 1% = 100 / 100% = 10000 / 0.01% = 1
+        uint256 voteCooldown;
         uint16 donationFee;
     }
 
@@ -121,6 +126,8 @@ interface ICrowdfunding {
         uint256 currentTreshold;
         uint256 nbOfTresholds;
         uint256 requiredVotePercentage; // must be in integer like 50% = 50 28% = 28
+        uint256 voteCooldown;
+        uint256 currentVoteCooldown;
         uint16 donationFee;
     }
 
@@ -256,5 +263,8 @@ interface ICrowdfunding {
      * @param newStatus New status to set
      */
     function UpdateProjectStatus(uint256 projectId, uint newStatus)
+        external payable;
+
+    function UpdateProjectVoteCooldown(uint256 projectId, uint256 newCooldown)
         external payable;
 }

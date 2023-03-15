@@ -1,8 +1,7 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { ethers } from "hardhat";
-const { BN, expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
+import { ethers, upgrades }  from "hardhat";
+const { BN, expectRevert } = require('@openzeppelin/test-helpers');
 
 
 describe("Crowdfunding Contract", function () {
@@ -10,7 +9,7 @@ describe("Crowdfunding Contract", function () {
     const Crowdfunding = await ethers.getContractFactory("Crowdfunding");
     const [owner, addr1, addr2] = await ethers.getSigners();
 
-    const crowdfunding = await Crowdfunding.deploy();
+    const crowdfunding = await upgrades.deployProxy(Crowdfunding, { initializer: 'initialize' });
 
     await crowdfunding.deployed();
 
@@ -69,7 +68,19 @@ describe("Crowdfunding Contract", function () {
       donationFee: 0
     };
 
-    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc };
+    let projectDataZero = {
+      owner: owner.address,
+      exchangeTokenAddress: usdc.address,
+      name: "MyProjectName",
+      assoName: "MyAssoName",
+      teamMembers: ["TeamMember1", "TeamMember2"],
+      description: "MyDescription",
+      requiredAmount: 0,
+      requiredVotePercentage: 50,
+      donationFee: 0
+    };
+
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, projectDataZero };
   }
   async function createProjectAndUSDCFixture() {
     const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
@@ -170,7 +181,6 @@ describe("Crowdfunding Contract", function () {
 
     return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, mintAmount, donatedAmount, projectID };
   }
-
   async function donateToProject3AndHasVoted() {
     const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(donateToProject3AndVote);
     const projectID = 0;
@@ -179,7 +189,30 @@ describe("Crowdfunding Contract", function () {
     return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, projectID, voteValue};
   }
 
+  describe("Upgrade", function() {
+    it('Should Upgrade to V2', async () => {
+      const { crowdfunding, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
+      const CrowdfundingV2 = await ethers.getContractFactory("CrowdfundingV2");
+
+      const crowdfundingUpgraded = await upgrades.upgradeProxy(crowdfunding.address, CrowdfundingV2);
+      expect(crowdfundingUpgraded.address).to.be.equal(crowdfunding.address);
+
+      const isUpgraded = await crowdfundingUpgraded.getMyNewvariable();
+      expect(isUpgraded).to.be.equal(0);
+
+      await crowdfundingUpgraded.setMyNewvariable(1);
+      const isUpgraded2 = await crowdfundingUpgraded.getMyNewvariable();
+      expect(isUpgraded2).to.be.equal(1);
+    });
+  });
+
   describe("Deployment", function () {
+    describe("Initializer", function () {
+      it("Should not initlaize twice", async function () {
+        const { owner, crowdfunding } = await loadFixture(deployCrowdfundingFixture);
+        await expectRevert(crowdfunding.initialize(),"Initializable: contract is already initialized") 
+      });
+    });
     describe("USDC mint(uint amount)", function () {
       it("Should mint amount", async function () {
         const { owner, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
@@ -189,7 +222,7 @@ describe("Crowdfunding Contract", function () {
       });
     });
 
-    describe("Constructor()", function () {
+    describe("Initializer()", function () {
       it("Should grant role DEFAULT_ADMIN_ROLE", async function () {
         const { crowdfunding, owner, addr1, addr2 } = await loadFixture(deployCrowdfundingFixture);
         let DEFAULT_ADMIN_ROLE = await crowdfunding.DEFAULT_ADMIN_ROLE({ from: owner.address });
@@ -289,6 +322,12 @@ describe("Crowdfunding Contract", function () {
         expect(crowdfunding.createProject(projectData, emptyTresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'ZeroTresholds');
       });
 
+      it("Should not create project, revert : ZeroRequiredAmount", async function () {
+        const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectDataZero, emptyTresholds, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
+        await crowdfunding.addNewSupportedToken(usdc.address, { from: owner.address });
+        expect(crowdfunding.createProject(projectDataZero, emptyTresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'ZeroRequiredAmount');
+      });
+
       it("Should create project", async function () {
         const { crowdfunding, owner, addr1, addr2, projectData, tresholds, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
 
@@ -348,6 +387,11 @@ describe("Crowdfunding Contract", function () {
       });
     });
     describe("donateToProject(uint id, uint amount)", function () {
+      it("Shouldnt donate, revert : Paused", async function () {
+        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
+        await crowdfunding.connect(owner).pause();
+        await expectRevert(crowdfunding.donateToProject(0, 10), "Pausable: paused");
+      });
       it("Shouldnt donate, revert : Invalid Project Id", async function () {
         const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
         await expect(crowdfunding.donateToProject(0, 10)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
@@ -436,6 +480,11 @@ describe("Crowdfunding Contract", function () {
       });
     });
     describe("voteForTreshold(uint256 id, bool vote)", function () {
+      it("Shouldnt vote, revert : Paused", async function () {
+        const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
+        await crowdfunding.pause();
+        await expectRevert(crowdfunding.connect(owner).voteForTreshold(projectID, 1), "Pausable: paused");
+      });
       it("Shouldnt vote, revert : Only Donators can vote", async function () {
         const {Crowdfunding, crowdfunding, addr1, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
         await expect(crowdfunding.connect(addr1).voteForTreshold(projectID, 1)).to.be.revertedWithCustomError(Crowdfunding, 'NotADonator');
@@ -444,10 +493,18 @@ describe("Crowdfunding Contract", function () {
         const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
         await expect(crowdfunding.connect(owner).voteForTreshold(projectID, 1)).to.be.revertedWithCustomError(Crowdfunding, 'NotInVotingSession');
       });
+      it("Shouldnt vote, revert : InvalidProjectId", async function () {
+        const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
+        await expect(crowdfunding.connect(owner).voteForTreshold(5000, 1)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
+      });
       it("Shouldnt vote, revert : Can Only Vote Once", async function () {
         const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
         await crowdfunding.voteForTreshold(projectID, 1);
         await expect(crowdfunding.connect(owner).voteForTreshold(projectID, 1)).to.be.revertedWithCustomError(Crowdfunding, 'CanOnlyVoteOnce');
+      });
+      it("Shouldnt vote, revert : Invalid Uint", async function () {
+        const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
+        await expect(crowdfunding.connect(owner).voteForTreshold(projectID, 2)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidUintAsBool');
       });
       it("Should vote positive", async function () {
         const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
@@ -464,7 +521,7 @@ describe("Crowdfunding Contract", function () {
         expect(await crowdfunding.getTresholdVoteFromAddress(owner.address, projectID, 0)).to.be.equal(1);
       });
     });
-    /*describe("startTresholdVoting(uint256 id)", function () {
+    describe("startTresholdVoting(uint256 id)", function () {
       it("Shouldnt start voting, revert : You are not allowed", async function () {
         const { crowdfunding, addr1, projectID } = await loadFixture(createProjectAndDonateFixture);
         await expectRevert(crowdfunding.connect(addr1).startTresholdVoting(projectID), "You are not allowed");
@@ -492,8 +549,17 @@ describe("Crowdfunding Contract", function () {
         const treshold = await crowdfunding.getProjectTresholds(projectID, 0);
         expect(treshold.voteSession.isVotingInSession).to.be.equal(true);
       });
-    });*/
+    });
     describe("endTresholdVoting(uint256 id)", function () {
+      it("Shouldnt end voting, revert : Paused", async function () {
+        const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
+        await crowdfunding.pause();
+        await expectRevert(crowdfunding.connect(owner).endTresholdVoting(projectID),"Pausable: paused");
+      });
+      it("Shouldnt end voting, revert : InvalidProjectId", async function () {
+        const { crowdfunding, Crowdfunding, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
+        await expect(crowdfunding.endTresholdVoting(5000)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
+      });
       it("Shouldnt end voting, revert : You are not allowed", async function () {
         const { crowdfunding, addr1, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
         let UPDATER_ROLE = await crowdfunding.connect(addr1).UPDATER_ROLE();
@@ -566,6 +632,12 @@ describe("Crowdfunding Contract", function () {
 
     });
     describe("withdrawFunds(address exchangeTokenAddress)", function () {
+      it("Shouldnt withdrawFunds, revert : Paused", async function () {
+        const {Crowdfunding, crowdfunding, usdc, projectID } = await loadFixture(createProjectAndDonateFixture);
+        await crowdfunding.pause();
+        await expectRevert(crowdfunding.withdrawFunds(usdc.address), "Pausable: paused");
+      });
+
       it("Shouldnt withdrawFunds, revert : No Funds to withdraw", async function () {
         const {Crowdfunding, crowdfunding, usdc, projectID } = await loadFixture(createProjectAndDonateFixture);
         await expect(crowdfunding.withdrawFunds(usdc.address)).to.be.revertedWithCustomError(Crowdfunding, 'NoFundsToWithdraw');
@@ -598,6 +670,11 @@ describe("Crowdfunding Contract", function () {
     });
 
     describe("setDonationFee(uint projectId, uint16 newFee)", function () {
+      it("Shouldnt change DonationFee, revert : InvalidProjectId", async function () {
+        const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
+        const newFee = 100;
+        await expect(crowdfunding.connect(owner).setDonationFee(5000, newFee)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
+      });
       it("Shouldnt change DonationFee, revert : Cant go above 10000", async function () {
         const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
         const newFee = 25000;
@@ -647,6 +724,11 @@ describe("Crowdfunding Contract", function () {
       it("Shouldnt UpdateProjectStatus, revert : Invalid Project Id", async function () {
         const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
         await expect(crowdfunding.connect(owner).UpdateProjectStatus(100, 0)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
+      });
+
+      it("Shouldnt UpdateProjectStatus, revert : InvalidUintAsBool", async function () {
+        const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
+        await expect(crowdfunding.connect(owner).UpdateProjectStatus(projectID, 2)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidUintAsBool');
       });
 
       it("Should UpdateProjectStatus, false", async function () {

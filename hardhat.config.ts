@@ -3,6 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import 'solidity-coverage';
 import 'hardhat-abi-exporter';
 import 'hardhat-gas-reporter';
+import '@openzeppelin/hardhat-upgrades';
 
 const config: HardhatUserConfig = {
   solidity: {
