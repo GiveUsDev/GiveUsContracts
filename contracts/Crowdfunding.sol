@@ -299,7 +299,8 @@ contract Crowdfunding is ICrowdfunding, Initializable, AccessControlUpgradeable,
         if (
             project.currentAmount >= currentTreshold.budget &&
             currentTreshold.voteSession.isVotingInSession == 0 &&
-            project.currentTreshold < project.nbOfTresholds
+            project.currentTreshold < project.nbOfTresholds &&
+            project.currentVoteCooldown <= block.timestamp
         ) {
             startTresholdVoting(projectId);
         }
@@ -551,6 +552,22 @@ contract Crowdfunding is ICrowdfunding, Initializable, AccessControlUpgradeable,
                 currentTreshold.budget,
                 project.exchangeTokenAddress
             );
+
+            //updating our cached variables
+            project.currentTreshold++;
+            if(project.currentTreshold < project.nbOfTresholds){
+                currentTreshold = projectsTresholds[id][project.currentTreshold];
+
+                //check if we have enough funds to start next vote
+                if (
+                project.currentAmount >= currentTreshold.budget &&
+                currentTreshold.voteSession.isVotingInSession == 0
+                ) {
+                    startTresholdVoting(id);
+                }
+            }
+            
+
         } else {
             resetVoteSession(id);
         }
