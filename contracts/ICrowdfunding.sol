@@ -31,6 +31,7 @@ interface ICrowdfunding {
     error NotProjectOwner();
     error DifferentExchangeToken();
     error CantWithdrawToSameProject();
+    error VoteCooldownNotOver(); 
 
     /**
      * @notice Event emited whenever a new project is created

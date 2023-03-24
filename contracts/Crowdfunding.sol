@@ -558,6 +558,10 @@ contract Crowdfunding is
             project.currentTreshold
         ];
 
+        if (project.currentVoteCooldown > block.timestamp) {
+            revert VoteCooldownNotOver(); 
+        }
+
         if (currentTreshold.voteSession.isVotingInSession == 1) {
             revert AlreadyInVotingSession();
         }
