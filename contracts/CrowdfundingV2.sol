@@ -13,7 +13,12 @@ import {ICrowdfunding} from "./ICrowdfunding.sol";
  * @author Ludovic Domingues
  * @notice Contract used for Looting Plateform
  */
-contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeable, PausableUpgradeable {
+contract CrowdfundingV2 is
+    ICrowdfunding,
+    Initializable,
+    AccessControlUpgradeable,
+    PausableUpgradeable
+{
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
     /**
@@ -53,8 +58,6 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
         private tresholdVoteFromAddress;
     mapping(uint256 => mapping(uint256 => address[]))
         private voterArrayForTreshold;
-    mapping(address => mapping(address => uint256))
-        private availableWithdrawals;
 
     CountersUpgradeable.Counter private idCounter;
 
@@ -103,8 +106,12 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
             projectData.requiredAmount,
             0,
             0,
+            0,
+            0,
             tresholds.length,
             projectData.requiredVotePercentage,
+            projectData.voteCooldown, //TODO add require for voteCooldown
+            0,
             projectData.donationFee
         );
 
@@ -126,14 +133,10 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
      * @param id project id
      * @return uint boolean, is user a donator
      */
-    function isDonator(address user, uint256 id)
-        public
-        view
-        virtual
-        override
-        validProjectId(id)
-        returns (uint256)
-    {
+    function isDonator(
+        address user,
+        uint256 id
+    ) public view virtual override validProjectId(id) returns (uint256) {
         return userDonations[user][id] != 0 ? 1 : 0;
     }
 
@@ -151,7 +154,9 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
      * @param projectId ID of the project
      * @return Project the data for the given project
      */
-    function getProject(uint256 projectId)
+    function getProject(
+        uint256 projectId
+    )
         external
         view
         virtual
@@ -168,7 +173,10 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
      * @param tresholdId ID of the treshold
      * @return Treshold the treshold for the given projectId && tresholdId
      */
-    function getProjectTresholds(uint256 projectId, uint256 tresholdId)
+    function getProjectTresholds(
+        uint256 projectId,
+        uint256 tresholdId
+    )
         external
         view
         virtual
@@ -186,7 +194,10 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
      * @param projectId ID of the project
      * @return uint donated amount
      */
-    function getUserDonations(address donatorAddress, uint256 projectId)
+    function getUserDonations(
+        address donatorAddress,
+        uint256 projectId
+    )
         external
         view
         virtual
@@ -221,19 +232,6 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
     }
 
     /**
-     * @notice Function that returns the amount that user can withdraw for given token
-     * @param userAddress address of the user
-     * @param erc20ContractAddress Address of the ERC20 token
-     * @return uint amount available to withdraw
-     */
-    function getAvailableWithdrawals(
-        address userAddress,
-        address erc20ContractAddress
-    ) external view virtual override returns (uint256) {
-        return availableWithdrawals[userAddress][erc20ContractAddress];
-    }
-
-    /**
      * @notice Triggers stopped state
      */
     function pause() external payable onlyRole(PAUSER_ROLE) whenNotPaused {
@@ -252,13 +250,10 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
      * @param projectId ID of the project
      * @param amount amount to donate
      */
-    function donateToProject(uint256 projectId, uint256 amount)
-        external
-        virtual
-        override
-        whenNotPaused
-        validProjectId(projectId)
-    {
+    function donateToProject(
+        uint256 projectId,
+        uint256 amount
+    ) external virtual override whenNotPaused validProjectId(projectId) {
         if (amount == 0) {
             revert ZeroAmount();
         }
@@ -275,7 +270,10 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
         address tokenSupported = project.exchangeTokenAddress;
 
         if (
-            IERC20Upgradeable(tokenSupported).allowance(msg.sender, address(this)) < amount
+            IERC20Upgradeable(tokenSupported).allowance(
+                msg.sender,
+                address(this)
+            ) < amount
         ) {
             revert AllowanceNotApproved();
         }
@@ -297,7 +295,8 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
         if (
             project.currentAmount >= currentTreshold.budget &&
             currentTreshold.voteSession.isVotingInSession == 0 &&
-            project.currentTreshold < project.nbOfTresholds
+            project.currentTreshold < project.nbOfTresholds &&
+            project.currentVoteCooldown <= block.timestamp
         ) {
             startTresholdVoting(projectId);
         }
@@ -319,7 +318,9 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
      * @notice Function that starts a vote session for a treshold
      * @param id ID of the project
      */
-    function endTresholdVoting(uint256 id)
+    function endTresholdVoting(
+        uint256 id
+    )
         external
         payable
         virtual
@@ -348,13 +349,10 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
      * @param id ID of the project
      * @param vote true for positive vote, false for negative vote
      */
-    function voteForTreshold(uint256 id, uint256 vote)
-        external
-        virtual
-        override
-        whenNotPaused
-        validProjectId(id)
-    {
+    function voteForTreshold(
+        uint256 id,
+        uint256 vote
+    ) external virtual override whenNotPaused validProjectId(id) {
         if (vote > 1) {
             revert InvalidUintAsBool();
         }
@@ -388,44 +386,53 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
 
     /**
      * @notice Function that allows a project owner to withdraw his funds
-     * @param exchangeTokenAddress Address of the ERC20 token
      */
-    function withdrawFunds(address exchangeTokenAddress)
+    function withdrawFunds(
+        uint256 projectId
+    )
         external
         virtual
         override
         whenNotPaused
-        supportedToken(exchangeTokenAddress)
+        validProjectId(projectId)   
     {
-        uint256 amountToWithdraw = availableWithdrawals[msg.sender][
-            exchangeTokenAddress
-        ];
+        Project memory project = projects[projectId];
+        if (project.owner != msg.sender){
+            revert NotProjectOwner();
+        }
+
+        uint256 amountToWithdraw = project.availableToWithdraw;
+
         if (amountToWithdraw == 0) {
             revert NoFundsToWithdraw();
         }
 
-        availableWithdrawals[msg.sender][exchangeTokenAddress] = 0;
+        address exchangeTokenAddress = project.exchangeTokenAddress;
+
+        project.availableToWithdraw = 0;
+        project.amountWithdrawn += amountToWithdraw;
+
+        projects[projectId] = project;
 
         if (
-            !IERC20Upgradeable(exchangeTokenAddress).transfer(msg.sender, amountToWithdraw)
+            !IERC20Upgradeable(exchangeTokenAddress).transfer(
+                msg.sender,
+                amountToWithdraw
+            )
         ) {
             revert TransferFailed();
         }
 
-        emit WithdrewFunds(msg.sender, exchangeTokenAddress, amountToWithdraw);
+        emit WithdrewFunds(msg.sender, projectId, exchangeTokenAddress, amountToWithdraw);
     }
 
     /**
      * @notice Function that adds a new supported token
      * @param tokenAddress Address of the ERC20 token
      */
-    function addNewSupportedToken(address tokenAddress)
-        external
-        payable
-        virtual
-        override
-        onlyRole(UPDATER_ROLE)
-    {
+    function addNewSupportedToken(
+        address tokenAddress
+    ) external payable virtual override onlyRole(UPDATER_ROLE) {
         supportedTokens[tokenAddress] = 1;
         emit NewSupportedTokenAdded(tokenAddress);
     }
@@ -435,7 +442,10 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
      * @param projectId ID of the project
      * @param newFee New fee to set
      */
-    function setDonationFee(uint256 projectId, uint16 newFee)
+    function setDonationFee(
+        uint256 projectId,
+        uint16 newFee
+    )
         external
         payable
         virtual
@@ -455,7 +465,10 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
      * @param projectId ID of the project
      * @param newStatus New status to set
      */
-    function UpdateProjectStatus(uint256 projectId, uint256 newStatus)
+    function updateProjectStatus(
+        uint256 projectId,
+        uint256 newStatus
+    )
         external
         payable
         virtual
@@ -471,11 +484,46 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
         emit ProjectStatusUpdated(projectId, newStatus);
     }
 
-    function startTresholdVoting(uint256 id)
-        private
-        whenNotPaused
-        validProjectId(id)
+    function updateProjectVoteCooldown(
+        uint256 projectId,
+        uint256 newCooldown
+    )
+        external
+        payable
+        virtual
+        override
+        onlyRole(UPDATER_ROLE)
+        validProjectId(projectId)
     {
+        projects[projectId].voteCooldown = newCooldown;
+        emit ProjectVoteCooldownUpdated(projectId, newCooldown);
+    }
+
+    function withdrawFundsToOtherProject(
+        uint256 fromProjectID,
+        uint256 toProjectID
+    )
+        external
+        payable
+        virtual
+        override
+        onlyRole(UPDATER_ROLE)
+        validProjectId(fromProjectID)
+        validProjectId(toProjectID)
+    {
+        Project memory fromProject = projects[fromProjectID];
+        Project memory toProject = projects[toProjectID];
+
+        if (fromProject.currentAmount == 0) {
+            revert NoFundsToWithdraw();
+        }
+
+
+    }
+
+    function startTresholdVoting(
+        uint256 id
+    ) private whenNotPaused validProjectId(id) {
         Project memory project = projects[id];
         Treshold memory currentTreshold = projectsTresholds[id][
             project.currentTreshold
@@ -530,13 +578,25 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
             (finalAmount * 10000) / (positiveVotes + negativeVotes) >
             votesPercentage
         ) {
-            projects[id].currentTreshold++;
+            project.availableToWithdraw += currentTreshold.budget++;
+            project.currentTreshold++;
 
-            addWithdrawalAmount(
-                project.owner,
-                currentTreshold.budget,
-                project.exchangeTokenAddress
-            );
+            //updating global variables
+            projects[id] = project;
+
+            if (project.currentTreshold < project.nbOfTresholds) {
+                currentTreshold = projectsTresholds[id][
+                    project.currentTreshold
+                ];
+
+                //check if we have enough funds to start next vote
+                if (
+                    project.currentAmount >= currentTreshold.budget &&
+                    currentTreshold.voteSession.isVotingInSession == 0
+                ) {
+                    startTresholdVoting(id);
+                }
+            }
         } else {
             resetVoteSession(id);
         }
@@ -570,14 +630,12 @@ contract CrowdfundingV2 is ICrowdfunding, Initializable, AccessControlUpgradeabl
         }
 
         delete voterArrayForTreshold[id][project.currentTreshold];
-    }
 
-    function addWithdrawalAmount(
-        address owner,
-        uint256 amount,
-        address exchangeTokenAddress
-    ) private {
-        availableWithdrawals[owner][exchangeTokenAddress] += amount;
+        uint256 newCooldown = block.timestamp + project.voteCooldown;
+
+        projects[id].currentVoteCooldown = newCooldown;
+
+        emit VoteSessionReset(id, project.currentTreshold, newCooldown);
     }
 
     uint256 private myNewvariable;

@@ -28,6 +28,9 @@ interface ICrowdfunding {
     error NoMoreTresholds();
     error CantDeliberateWithoutVotes();
     error InvalidUintAsBool();
+    error NotProjectOwner();
+    error DifferentExchangeToken();
+    error CantWithdrawToSameProject();
 
     /**
      * @notice Event emited whenever a new project is created
@@ -57,6 +60,7 @@ interface ICrowdfunding {
      */
     event WithdrewFunds(
         address projectOwnerAddress,
+        uint256 projectId,
         address exchangeTokenAddress,
         uint256 amountToWithdraw
     );
@@ -123,6 +127,8 @@ interface ICrowdfunding {
         string description;
         uint256 requiredAmount;
         uint256 currentAmount;
+        uint256 availableToWithdraw;
+        uint256 amountWithdrawn;
         uint256 currentTreshold;
         uint256 nbOfTresholds;
         uint256 requiredVotePercentage; // must be in integer like 50% = 50 28% = 28
@@ -202,17 +208,6 @@ interface ICrowdfunding {
         returns (uint);
 
     /**
-     * @notice Function that returns the amount that user can withdraw for given token
-     * @param userAddress address of the user
-     * @param erc20ContractAddress Address of the ERC20 token
-     * @return uint amount available to withdraw
-     */
-    function getAvailableWithdrawals(
-        address userAddress,
-        address erc20ContractAddress
-    ) external view returns (uint256);
-
-    /**
      * @notice Donate amount of tokens to project id
      * @param projectId ID of the project
      * @param amount amount to donate
@@ -237,9 +232,8 @@ interface ICrowdfunding {
 
     /**
      * @notice Function that allows a project owner to withdraw his funds
-     * @param exchangeTokenAddress Address of the ERC20 token
      */
-    function withdrawFunds(address exchangeTokenAddress)
+    function withdrawFunds(uint256 projectId)
         external;
 
     /**
@@ -262,9 +256,12 @@ interface ICrowdfunding {
      * @param projectId ID of the project
      * @param newStatus New status to set
      */
-    function UpdateProjectStatus(uint256 projectId, uint newStatus)
+    function updateProjectStatus(uint256 projectId, uint newStatus)
         external payable;
 
-    function UpdateProjectVoteCooldown(uint256 projectId, uint256 newCooldown)
+    function updateProjectVoteCooldown(uint256 projectId, uint256 newCooldown)
         external payable;
+
+    function withdrawFundsToOtherProject(uint256 fromProjectID, uint256 toProjectID)
+    external payable;
 }
