@@ -1,82 +1,24 @@
 # Crowdfunding contract
 
-Tests almost done. Analysed with slither.
+Summary:
+The provided smart contract is designed to manage donations, fund allocation, and voting for project milestones. Users can donate to projects, and project owners can withdraw funds when certain criteria are met. Voting sessions are held to deliberate on project milestones, and project owners can only withdraw funds after receiving approval in the voting sessions.
 
+Project and Treshold Structures:
+The smart contract uses two main structures, Project and Treshold. The Project structure contains information about each project, such as owner, project name, token address, donation fee, and more. The Treshold structure contains information about a project's milestones or stages and voting sessions for these milestones.
 
-Test Coverage :
- 
-  Crowdfunding Contract
-  
-    Deployment
-    
-      USDC mint(uint amount)
-        ✔ Should mint amount (200ms)
-      Constructor()
-        ✔ Should grant role DEFAULT_ADMIN_ROLE
-        ✔ Should grant role PAUSER_ROLE
-        ✔ Should grant role PAUSER_ROLE
-      pause()
-        ✔ should not pause, revert : Access Control (89ms)
-        ✔ should not pause twice, revert : Pausable: paused
-        ✔ should pause
-      unpause()
-        ✔ should not unpause, revert : Access Control (46ms)
-        ✔ should not unpause not paused, revert : Pausable: not paused
-        ✔ should unpause
-      createProject(Project calldata _project)
-        ✔ Should not create project, revert : Missing Role (39ms)
-        ✔ Should not create project, revert : Paused
-        ✔ Should not create project, revert : Token not supported
-        ✔ Should not create project, revert : Need at least one Treshold
-        ✔ Should create project (43ms)
-      addNewSupportedToken(address tokenAddress)
-        ✔ Should not add token, revert : AccessControl is missing role
-        ✔ Should add token
-      donateToProject(uint id, uint amount)
-        ✔ Shouldnt donate, revert : Min amount is 1 (52ms)
-        ✔ Shouldnt donate, revert : Project not Active
-        ✔ Shouldnt donate, revert : Need to approve allowance first (49ms)
-        ✔ Shouldnt donate, revert : Amount too small
-        ✔ Should donate and not put voteInSession (60ms)
-        ✔ Should donate put voteInSession (46ms)
-        ✔ Should donate and emit Event
-      isDonator(address user, uint256 id)
-        ✔ Should Return true
-      isTokenSupported(address token)
-        ✔ Should Return true
-        ✔ Should Return true
-      voteForTreshold(uint256 id, bool vote)
-        ✔ Shouldnt vote, revert : Only Donators can vote (54ms)
-        ✔ Shouldnt vote, revert : Not in Voting Session
-        ✔ Shouldnt vote, revert : Can Only Vote Once (55ms)
-        ✔ Should vote positive
-        ✔ Should vote negative
-      endTresholdVoting(uint256 id)
-        ✔ Shouldnt end voting, revert : You are not allowed
-        ✔ Shouldnt end voting, revert : Not in Voting Session
-        ✔ Should end voting, & set voting session false (77ms)
-      DeliberateVote(uint256 id)
-        ✔ Shouldnt deliberate, revert : Cant deliberate without votes
-        ✔ Should deliberate positive 1-0 (46ms)
-        ✔ Should deliberate negative whith 0-1 (45ms)
-        ✔ Should deliberate equal whith 1-1 with 50% (132ms)
-      withdrawFunds(address exchangeTokenAddress)
-        ✔ Shouldnt withdrawFunds, revert : No Funds to withdraw
-        ✔ Shouldnt withdrawFunds, revert : Token not supported
-        ✔ Should withdrawFunds (101ms)
-        ✔ Should withdrawFunds & emit event
-      setDonationFee(uint projectId, uint16 newFee)
-        ✔ Shouldnt change DonationFee, revert : Cant go above 10000 (90ms)
-        ✔ Shouldnt change DonationFee, revert : Access Control
-        ✔ Shouldnt change DonationFee & emit event
-        ✔ Should change DonationFee (102ms)
-        
-    47 passing (2s)
+Creation and Management of Projects:
+The smart contract allows Team members (UPDATER_ROLE) to create new projects with specified attributes like name, description, milestones, and donation fee. Updaters can also update the status of their projects, set donation fees, and modify vote cooldowns.
 
+Donations to Projects:
+Users can donate to projects using the project's supported token. The smart contract checks for allowance, project status, and minimum donation amount. A small transaction fee is deducted from the donation, and the remaining funds are added to the project's current amount. If the project's current amount meets the budget of the next milestone, a voting session is initiated.
 
-File               |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
--------------------|----------|----------|----------|----------|----------------|
- contracts/        |      100 |    84.21 |      100 |      100 |                |
-  Crowdfunding.sol |      100 |    84.21 |      100 |      100 |                |
-  USDC.sol         |      100 |      100 |      100 |      100 |                |
-All files          |      100 |    84.21 |      100 |      100 |                |
+Voting Sessions and Tresholds:
+When a project reaches a milestone's budget, a voting session is started for that milestone. Donators can vote in the session, and their votes are recorded. Once the voting session is over, the votes are deliberated, and if the required vote percentage is met, funds are released to the project owner. If the vote fails, the vote session is reset, and a new voting session can start after the cooldown period.
+
+Fund Withdrawals and Transfers:
+Project owners can withdraw funds if they have available funds to withdraw. The contract checks if the project owner's address matches the project's owner address and if there are available funds. Additionally, funds can be transferred from one project to another by an authorized role (UPDATER_ROLE). This is intended for emergency situations and deactivates the source project after the transfer.
+
+Supported Tokens and Roles:
+The smart contract supports adding new tokens, and only specific roles (UPDATER_ROLE, PAUSER_ROLE) can perform certain actions like updating project attributes or pausing the contract. 
+
+The contract also uses OpenZeppelin's upgradeability features to ensure that future updates can be made without compromising the storage layout.
