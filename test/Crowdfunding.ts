@@ -84,6 +84,65 @@ describe("Crowdfunding Contract", function () {
 
     return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, projectDataZero };
   }
+  async function createProjectDataZeroAmountAndUSDCFixture() {
+    const { Crowdfunding, crowdfunding, owner, addr1, addr2 } = await loadFixture(deployCrowdfundingFixture);
+    const { USDC, usdc } = await loadFixture(deployUSDCFixture);
+
+    const requiredAmountToFund = 0;
+
+    const voteSession = {
+      isVotingInSession: 0,
+      positiveVotes: 0,
+      negativeVotes: 0,
+    }
+
+    const treshold1 = {
+      budget: 50000,
+      voteSession: voteSession
+    }
+
+    const treshold2 = {
+      budget: 100000,
+      voteSession: voteSession
+    }
+
+    const treshold3 = {
+      budget: 150000,
+      voteSession: voteSession
+    }
+
+    const tresholds = [treshold1, treshold2, treshold3];
+    const emptyTresholds = [treshold1];
+    emptyTresholds.pop();
+
+    let projectData = {
+      owner: owner.address,
+      exchangeTokenAddress: usdc.address,
+      name: "MyProjectName",
+      assoName: "MyAssoName",
+      teamMembers: ["TeamMember1", "TeamMember2"],
+      description: "MyDescription",
+      requiredAmount: requiredAmountToFund,
+      requiredVotePercentage: 50,
+      voteCooldown: 0,
+      donationFee: 0
+    };
+
+    let projectDataZero = {
+      owner: owner.address,
+      exchangeTokenAddress: usdc.address,
+      name: "MyProjectName",
+      assoName: "MyAssoName",
+      teamMembers: ["TeamMember1", "TeamMember2"],
+      description: "MyDescription",
+      requiredAmount: 0,
+      requiredVotePercentage: 50,
+      voteCooldown: 0,
+      donationFee: 0
+    };
+
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, projectDataZero };
+  }
   async function createProjectAndUSDCFixture() {
     const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
     await crowdfunding.addNewSupportedToken(usdc.address, { from: owner.address });
@@ -408,19 +467,19 @@ describe("Crowdfunding Contract", function () {
 
       it("Should not create project, revert : Token not supported", async function () {
         const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds } = await loadFixture(createProjectDataAndUSDCFixture);
-        expect(crowdfunding.createProject(projectData, tresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'TokenNotSupported');
+        await expect(crowdfunding.createProject(projectData, tresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'TokenNotSupported');
       });
 
       it("Should not create project, revert : Need at least one Treshold", async function () {
         const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, emptyTresholds, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
         await crowdfunding.addNewSupportedToken(usdc.address, { from: owner.address });
-        expect(crowdfunding.createProject(projectData, emptyTresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'ZeroTresholds');
+        await expect(crowdfunding.createProject(projectData, emptyTresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'ZeroTresholds');
       });
 
       it("Should not create project, revert : ZeroRequiredAmount", async function () {
-        const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectDataZero, emptyTresholds, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
+        const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectDataZero, tresholds, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
         await crowdfunding.addNewSupportedToken(usdc.address, { from: owner.address });
-        expect(crowdfunding.createProject(projectDataZero, emptyTresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'ZeroRequiredAmount');
+        await expect(crowdfunding.createProject(projectDataZero, tresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'ZeroRequiredAmount');
       });
 
       it("Should create project", async function () {
@@ -1018,6 +1077,31 @@ describe("Crowdfunding Contract", function () {
 
         expect(firstProjectAfter.currentAmount).to.be.equal(0);
         expect(secondProjectAfter.currentAmount).to.be.equal(currentAmountFirstProject.add(currentAmountSecondProject));
+     
+      });
+
+      it("Should withdrawFundsToOtherProject from inactive project", async function () {
+        const { crowdfunding, owner} = await loadFixture(createSecondProject);
+        const firstProjectId = 0;
+        const seconsProjectId = 1;
+
+        await crowdfunding.connect(owner).updateProjectStatus(firstProjectId, 0);
+
+        const firstProject = await crowdfunding.connect(owner).getProject(firstProjectId);
+        const secondProject = await crowdfunding.connect(owner).getProject(seconsProjectId);
+
+        const currentAmountFirstProject = firstProject.currentAmount;
+        const currentAmountSecondProject = secondProject.currentAmount;
+        expect(firstProject.isActive).to.be.equal(0);
+
+        await crowdfunding.connect(owner).withdrawFundsToOtherProject(firstProjectId, seconsProjectId);
+
+        const firstProjectAfter = await crowdfunding.connect(owner).getProject(firstProjectId);
+        const secondProjectAfter = await crowdfunding.connect(owner).getProject(seconsProjectId);
+
+        expect(firstProjectAfter.currentAmount).to.be.equal(0);
+        expect(secondProjectAfter.currentAmount).to.be.equal(currentAmountFirstProject.add(currentAmountSecondProject));
+        expect(firstProjectAfter.isActive).to.be.equal(0);
      
       });
       });
