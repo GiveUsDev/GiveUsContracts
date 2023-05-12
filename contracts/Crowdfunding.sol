@@ -66,7 +66,7 @@ contract Crowdfunding is
      * @notice Initializer used to set the default roles
      * @dev Grants `DEFAULT_ADMIN_ROLE`, `PAUSER_ROLE`, `UPDATER_ROLE` and `WITHDRAWER_ROLE` to the msg.sender
      */
-    function initialize() public initializer {
+    function initialize() external initializer {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
         _grantRole(UPDATER_ROLE, msg.sender);
