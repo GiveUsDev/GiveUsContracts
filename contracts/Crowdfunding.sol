@@ -128,7 +128,7 @@ contract Crowdfunding is
             0,
             tresholds.length,
             projectData.requiredVotePercentage,
-            projectData.voteCooldown, //TODO add require for voteCooldown
+            projectData.voteCooldown,
             0,
             projectData.donationFee
         );
