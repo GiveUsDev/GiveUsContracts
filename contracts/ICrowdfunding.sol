@@ -35,7 +35,6 @@ interface ICrowdfunding {
     error VoteCooldownNotOver();
     error NoFeesToWithdraw();
     error IncorrectVotePercentage();
-    error name(type name );
 
     /**
      * @notice Event emited whenever a new project is created
