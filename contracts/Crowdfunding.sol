@@ -71,6 +71,8 @@ contract Crowdfunding is
         _grantRole(PAUSER_ROLE, msg.sender);
         _grantRole(UPDATER_ROLE, msg.sender);
         _grantRole(WITHDRAWER_ROLE, msg.sender);
+        __AccessControl_init();
+        __Pausable_init();
     }
 
     /**
@@ -98,11 +100,11 @@ contract Crowdfunding is
         if (projectData.voteCooldown == 0) {
             revert ZeroVoteCooldown();
         }
-        if (projectData.requiredVotePercentage > 10000) {
-            revert CantGoAbove10000();
-        }
         if(projectData.requiredVotePercentage == 0){
             revert ZeroRequiredVotePercentage();
+        }
+        if (projectData.requiredVotePercentage > 10000) {
+            revert CantGoAbove10000();
         }
         if (projectData.donationFee > 10000) {
             revert CantGoAbove10000();
@@ -480,6 +482,9 @@ contract Crowdfunding is
     function addNewSupportedToken(
         address tokenAddress
     ) external virtual override onlyRole(UPDATER_ROLE) {
+        if (tokenAddress == address(0)) {
+            revert ZeroAddress();
+        }
         supportedTokens[tokenAddress] = 1;
         emit NewSupportedTokenAdded(tokenAddress);
     }
