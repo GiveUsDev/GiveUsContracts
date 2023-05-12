@@ -64,8 +64,8 @@ describe("Crowdfunding Contract", function () {
       teamMembers: ["TeamMember1", "TeamMember2"],
       description: "MyDescription",
       requiredAmount: requiredAmountToFund,
-      requiredVotePercentage: 50,
-      voteCooldown: 0,
+      requiredVotePercentage: 5000,
+      voteCooldown: 1,
       donationFee: 0
     };
 
@@ -77,8 +77,8 @@ describe("Crowdfunding Contract", function () {
       teamMembers: ["TeamMember1", "TeamMember2"],
       description: "MyDescription",
       requiredAmount: 0,
-      requiredVotePercentage: 50,
-      voteCooldown: 0,
+      requiredVotePercentage: 5000,
+      voteCooldown: 1,
       donationFee: 0
     };
 
@@ -123,8 +123,8 @@ describe("Crowdfunding Contract", function () {
       teamMembers: ["TeamMember1", "TeamMember2"],
       description: "MyDescription",
       requiredAmount: requiredAmountToFund,
-      requiredVotePercentage: 50,
-      voteCooldown: 0,
+      requiredVotePercentage: 5000,
+      voteCooldown: 1,
       donationFee: 0
     };
 
@@ -136,8 +136,8 @@ describe("Crowdfunding Contract", function () {
       teamMembers: ["TeamMember1", "TeamMember2"],
       description: "MyDescription",
       requiredAmount: 0,
-      requiredVotePercentage: 50,
-      voteCooldown: 0,
+      requiredVotePercentage: 5000,
+      voteCooldown: 1,
       donationFee: 0
     };
 
@@ -183,8 +183,8 @@ describe("Crowdfunding Contract", function () {
       teamMembers: ["TeamMember1", "TeamMember2"],
       description: "MyDescription",
       requiredAmount: requiredAmountToFund,
-      requiredVotePercentage: 50,
-      voteCooldown: 0,
+      requiredVotePercentage: 5000,
+      voteCooldown: 1,
       donationFee: 0
     };
 
@@ -252,8 +252,8 @@ describe("Crowdfunding Contract", function () {
       teamMembers: ["TeamMember1", "TeamMember2"],
       description: "secondProject",
       requiredAmount: requiredAmountToFund,
-      requiredVotePercentage: 50,
-      voteCooldown: 0,
+      requiredVotePercentage: 5000,
+      voteCooldown: 1,
       donationFee: 0
     };
 
@@ -297,8 +297,8 @@ describe("Crowdfunding Contract", function () {
       teamMembers: ["TeamMember1", "TeamMember2"],
       description: "thirdProject",
       requiredAmount: requiredAmountToFund,
-      requiredVotePercentage: 50,
-      voteCooldown: 0,
+      requiredVotePercentage: 5000,
+      voteCooldown: 1,
       donationFee: 0
     };
 

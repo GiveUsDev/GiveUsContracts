@@ -11,6 +11,7 @@ interface ICrowdfunding {
     error InvalidTresholdId();
     error TokenNotSupported();
     error ZeroTresholds();
+    error ZeroAddress();
     error ZeroRequiredAmount();
     error ZeroRequiredVotePercentage();
     error ZeroAmount();
