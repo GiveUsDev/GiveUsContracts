@@ -95,6 +95,13 @@ contract Crowdfunding is
         if (projectData.requiredAmount == 0) {
             revert ZeroRequiredAmount();
         }
+        if (projectData.voteCooldown == 0) {
+            revert ZeroVoteCooldown();
+        }
+        if (projectData.requiredVotePercentage < 10000 && projectData.requiredVotePercentage > 0) {
+            revert IncorrectVotePercentage();
+        }
+
         uint256 currentId = idCounter.current();
         projects[currentId] = Project(
             1,
@@ -630,7 +637,6 @@ contract Crowdfunding is
             revert CantDeliberateWithoutVotes();
         }
 
-        int256 finalAmount = positiveVotes - negativeVotes;
         int256 votesPercentage = int256(project.requiredVotePercentage);
 
         projectsTresholds[id][project.currentTreshold]
@@ -638,10 +644,10 @@ contract Crowdfunding is
             .isVotingInSession = 0;
 
         if (
-            (finalAmount * 10000) / (positiveVotes + negativeVotes) >
+            (positiveVotes * 10000) / (positiveVotes + negativeVotes) >
             votesPercentage
         ) {
-            project.availableToWithdraw += currentTreshold.budget++;
+            project.availableToWithdraw += currentTreshold.budget;
             project.currentTreshold++;
 
             //updating global variables

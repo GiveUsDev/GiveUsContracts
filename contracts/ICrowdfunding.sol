@@ -13,6 +13,7 @@ interface ICrowdfunding {
     error ZeroTresholds();
     error ZeroRequiredAmount();
     error ZeroAmount();
+    error ZeroVoteCooldown();
     error ProjectNotActive();
     error AmountTooSmall();
     error AllowanceNotApproved();
@@ -32,6 +33,7 @@ interface ICrowdfunding {
     error CantWithdrawToSameProject();
     error VoteCooldownNotOver();
     error NoFeesToWithdraw();
+    error IncorrectVotePercentage();
 
     /**
      * @notice Event emited whenever a new project is created
@@ -142,7 +144,7 @@ interface ICrowdfunding {
         uint256 amountWithdrawn;
         uint256 currentTreshold;
         uint256 nbOfTresholds;
-        uint256 requiredVotePercentage; // must be in integer like 50% = 50 28% = 28
+        uint256 requiredVotePercentage; // must be in basis points like 1% = 100 / 100% = 10000 / 0.01% = 1
         uint256 voteCooldown;
         uint256 currentVoteCooldown;
         uint16 donationFee;
