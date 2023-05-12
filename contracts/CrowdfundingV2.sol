@@ -58,6 +58,7 @@ contract CrowdfundingV2 is
         private tresholdVoteFromAddress;
     mapping(uint256 => mapping(uint256 => address[]))
         private voterArrayForTreshold;
+    mapping(address => uint256) private availableFees;
 
     CountersUpgradeable.Counter private idCounter;
 
@@ -82,7 +83,6 @@ contract CrowdfundingV2 is
         Treshold[] calldata tresholds
     )
         external
-        payable
         virtual
         override
         onlyRole(UPDATER_ROLE)
@@ -231,17 +231,23 @@ contract CrowdfundingV2 is
         return tresholdVoteFromAddress[voterAddress][projectId][tresholdId];
     }
 
+    function getFeesAvailableToWithdraw(
+        address tokenAddress
+    ) external view virtual override returns (uint256) {
+        return availableFees[tokenAddress];
+    }
+
     /**
      * @notice Triggers stopped state
      */
-    function pause() external payable onlyRole(PAUSER_ROLE) whenNotPaused {
+    function pause() external onlyRole(PAUSER_ROLE) whenNotPaused {
         _pause();
     }
 
     /**
      * @notice Returns to normal state
      */
-    function unpause() external payable onlyRole(PAUSER_ROLE) whenPaused {
+    function unpause() external onlyRole(PAUSER_ROLE) whenPaused {
         _unpause();
     }
 
@@ -279,6 +285,8 @@ contract CrowdfundingV2 is
         }
 
         uint256 transactionFee = (amount * project.donationFee) / 10000;
+        availableFees[tokenSupported] += transactionFee;
+
         uint256 donationAmount = amount - transactionFee;
 
         //Somehow the second one is more gas efficient written this way but not the first one
@@ -322,7 +330,6 @@ contract CrowdfundingV2 is
         uint256 id
     )
         external
-        payable
         virtual
         override
         onlyRole(UPDATER_ROLE)
@@ -389,15 +396,9 @@ contract CrowdfundingV2 is
      */
     function withdrawFunds(
         uint256 projectId
-    )
-        external
-        virtual
-        override
-        whenNotPaused
-        validProjectId(projectId)   
-    {
+    ) external virtual override whenNotPaused validProjectId(projectId) {
         Project memory project = projects[projectId];
-        if (project.owner != msg.sender){
+        if (project.owner != msg.sender) {
             revert NotProjectOwner();
         }
 
@@ -423,7 +424,34 @@ contract CrowdfundingV2 is
             revert TransferFailed();
         }
 
-        emit WithdrewFunds(msg.sender, projectId, exchangeTokenAddress, amountToWithdraw);
+        emit WithdrewFunds(
+            msg.sender,
+            projectId,
+            exchangeTokenAddress,
+            amountToWithdraw
+        );
+    }
+
+    function withdrawFees(
+        address tokenAddress
+    ) external virtual override onlyRole(WITHDRAWER_ROLE) whenNotPaused {
+        uint256 amountToWithdraw = availableFees[tokenAddress];
+        if (amountToWithdraw == 0) {
+            revert NoFeesToWithdraw();
+        }
+
+        availableFees[tokenAddress] = 0;
+
+        if (
+            !IERC20Upgradeable(msg.sender).transfer(
+                msg.sender,
+                amountToWithdraw
+            )
+        ) {
+            revert TransferFailed();
+        }
+
+        emit WithdrewFees(msg.sender, tokenAddress, amountToWithdraw);
     }
 
     /**
@@ -432,7 +460,7 @@ contract CrowdfundingV2 is
      */
     function addNewSupportedToken(
         address tokenAddress
-    ) external payable virtual override onlyRole(UPDATER_ROLE) {
+    ) external virtual override onlyRole(UPDATER_ROLE) {
         supportedTokens[tokenAddress] = 1;
         emit NewSupportedTokenAdded(tokenAddress);
     }
@@ -447,7 +475,6 @@ contract CrowdfundingV2 is
         uint16 newFee
     )
         external
-        payable
         virtual
         override
         onlyRole(UPDATER_ROLE)
@@ -470,7 +497,6 @@ contract CrowdfundingV2 is
         uint256 newStatus
     )
         external
-        payable
         virtual
         override
         onlyRole(UPDATER_ROLE)
@@ -489,7 +515,6 @@ contract CrowdfundingV2 is
         uint256 newCooldown
     )
         external
-        payable
         virtual
         override
         onlyRole(UPDATER_ROLE)
@@ -504,23 +529,53 @@ contract CrowdfundingV2 is
         uint256 toProjectID
     )
         external
-        payable
         virtual
         override
         onlyRole(UPDATER_ROLE)
         validProjectId(fromProjectID)
         validProjectId(toProjectID)
     {
+        if (fromProjectID == toProjectID) {
+            revert CantWithdrawToSameProject();
+        }
+
         Project memory fromProject = projects[fromProjectID];
         Project memory toProject = projects[toProjectID];
 
-        if (fromProject.currentAmount == 0) {
+        if (toProject.isActive == 0) {
+            revert ProjectNotActive();
+        }
+
+        uint256 availableFunds = fromProject.currentAmount -
+            fromProject.amountWithdrawn;
+
+        if (availableFunds == 0) {
             revert NoFundsToWithdraw();
         }
 
+        if (
+            fromProject.exchangeTokenAddress != toProject.exchangeTokenAddress
+        ) {
+            revert DifferentExchangeToken();
+        }
 
+        //If the project is still active we deactivate it
+        //This function is only used in a case of emergency
+        //so logically we should deactivate the project
+        if (fromProject.isActive == 1) {
+            fromProject.isActive = 0;
+        }
+
+        fromProject.currentAmount = fromProject.currentAmount - availableFunds;
+        fromProject.availableToWithdraw = 0;
+        toProject.currentAmount = toProject.currentAmount + availableFunds;
+
+        projects[fromProjectID] = fromProject;
+        projects[toProjectID] = toProject;
     }
 
+    //The ID is always Valid but i still put the modifier just in case
+    //The whenNotPaused is always Valid but i still put the modifier just in case
     function startTresholdVoting(
         uint256 id
     ) private whenNotPaused validProjectId(id) {
@@ -528,6 +583,10 @@ contract CrowdfundingV2 is
         Treshold memory currentTreshold = projectsTresholds[id][
             project.currentTreshold
         ];
+
+        if (project.currentVoteCooldown > block.timestamp) {
+            revert VoteCooldownNotOver();
+        }
 
         if (currentTreshold.voteSession.isVotingInSession == 1) {
             revert AlreadyInVotingSession();
@@ -550,7 +609,11 @@ contract CrowdfundingV2 is
             .isVotingInSession = 1;
     }
 
-    function deliberateVote(uint256 id) private validProjectId(id) {
+    //The ID is always Valid but i still put the modifier just in case
+    //The whenNotPaused is always Valid but i still put the modifier just in case
+    function deliberateVote(
+        uint256 id
+    ) private whenNotPaused validProjectId(id) {
         Project memory project = projects[id];
         Treshold memory currentTreshold = projectsTresholds[id][
             project.currentTreshold

@@ -7,7 +7,6 @@ pragma solidity 0.8.17;
  * @notice Contract used for Looting Plateform
  */
 interface ICrowdfunding {
-
     error InvalidProjectId();
     error InvalidTresholdId();
     error TokenNotSupported();
@@ -31,7 +30,8 @@ interface ICrowdfunding {
     error NotProjectOwner();
     error DifferentExchangeToken();
     error CantWithdrawToSameProject();
-    error VoteCooldownNotOver(); 
+    error VoteCooldownNotOver();
+    error NoFeesToWithdraw();
 
     /**
      * @notice Event emited whenever a new project is created
@@ -88,7 +88,17 @@ interface ICrowdfunding {
 
     event ProjectVoteCooldownUpdated(uint256 projectId, uint256 newCooldown);
 
-    event VoteSessionReset(uint256 projectId, uint256 projectTreshold, uint256 currentCooldown);
+    event VoteSessionReset(
+        uint256 projectId,
+        uint256 projectTreshold,
+        uint256 currentCooldown
+    );
+
+    event WithdrewFees(
+        address withdrawer,
+        address tokenWithdrawn,
+        uint256 amountWithdrawn
+    );
 
     struct Treshold {
         uint256 budget;
@@ -146,7 +156,7 @@ interface ICrowdfunding {
     function createProject(
         ProjectData calldata projectData,
         Treshold[] calldata tresholds
-    ) external payable;
+    ) external;
 
     /**
      * @notice Function returning if a user is a donator or not
@@ -168,7 +178,9 @@ interface ICrowdfunding {
      * @param projectId ID of the project
      * @return Project the data for the given project
      */
-    function getProject(uint256 projectId) external view returns (Project memory);
+    function getProject(
+        uint256 projectId
+    ) external view returns (Project memory);
 
     /**
      * @notice Function that returns the project treshold of a given projectId and tresholdId
@@ -176,10 +188,10 @@ interface ICrowdfunding {
      * @param tresholdId ID of the treshold
      * @return Treshold the treshold for the given projectId && tresholdId
      */
-    function getProjectTresholds(uint256 projectId, uint256 tresholdId)
-        external
-        view
-        returns (Treshold memory);
+    function getProjectTresholds(
+        uint256 projectId,
+        uint256 tresholdId
+    ) external view returns (Treshold memory);
 
     /**
      * @notice Function that returns donated amount from a donatorAddress to a project
@@ -187,10 +199,10 @@ interface ICrowdfunding {
      * @param projectId ID of the project
      * @return uint donated amount
      */
-    function getUserDonations(address donatorAddress, uint256 projectId)
-        external
-        view
-        returns (uint256);
+    function getUserDonations(
+        address donatorAddress,
+        uint256 projectId
+    ) external view returns (uint256);
 
     /**
      * @notice Function that returns if a donator has voted on a treshold
@@ -203,66 +215,66 @@ interface ICrowdfunding {
         address voterAddress,
         uint256 projectId,
         uint256 tresholdId
-    )
-        external
-        view
-        returns (uint);
+    ) external view returns (uint);
+
+    function getFeesAvailableToWithdraw(
+        address tokenAddress
+    ) external view returns (uint256);
 
     /**
      * @notice Donate amount of tokens to project id
      * @param projectId ID of the project
      * @param amount amount to donate
      */
-    function donateToProject(uint256 projectId, uint256 amount)
-        external;
-    
+    function donateToProject(uint256 projectId, uint256 amount) external;
+
     /**
      * @notice Function that starts a vote session for a treshold
      * @param id ID of the project
      */
-    function endTresholdVoting(uint256 id)
-        external payable;
+    function endTresholdVoting(uint256 id) external;
 
     /**
      * @notice Function that allows a donator to vote for the current treshold of a project
      * @param id ID of the project
      * @param vote true for positive vote, false for negative vote
      */
-    function voteForTreshold(uint256 id, uint vote)
-        external;
+    function voteForTreshold(uint256 id, uint vote) external;
 
     /**
      * @notice Function that allows a project owner to withdraw his funds
      */
-    function withdrawFunds(uint256 projectId)
-        external;
+    function withdrawFunds(uint256 projectId) external;
 
     /**
      * @notice Function that adds a new supported token
      * @param tokenAddress Address of the ERC20 token
      */
-    function addNewSupportedToken(address tokenAddress)
-        external payable;
+    function addNewSupportedToken(address tokenAddress) external;
 
     /**
      * @notice Function that sets the donation fee for a project
      * @param projectId ID of the project
      * @param newFee New fee to set
      */
-    function setDonationFee(uint256 projectId, uint16 newFee)
-        external payable;
+    function setDonationFee(uint256 projectId, uint16 newFee) external;
 
     /**
      * @notice Function that sets the project status
      * @param projectId ID of the project
      * @param newStatus New status to set
      */
-    function updateProjectStatus(uint256 projectId, uint newStatus)
-        external payable;
+    function updateProjectStatus(uint256 projectId, uint newStatus) external;
 
-    function updateProjectVoteCooldown(uint256 projectId, uint256 newCooldown)
-        external payable;
+    function updateProjectVoteCooldown(
+        uint256 projectId,
+        uint256 newCooldown
+    ) external;
 
-    function withdrawFundsToOtherProject(uint256 fromProjectID, uint256 toProjectID)
-    external payable;
+    function withdrawFundsToOtherProject(
+        uint256 fromProjectID,
+        uint256 toProjectID
+    ) external;
+
+    function withdrawFees(address tokenAddress) external;
 }
