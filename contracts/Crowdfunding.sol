@@ -98,8 +98,17 @@ contract Crowdfunding is
         if (projectData.voteCooldown == 0) {
             revert ZeroVoteCooldown();
         }
-        if (projectData.requiredVotePercentage < 10000 && projectData.requiredVotePercentage > 0) {
-            revert IncorrectVotePercentage();
+        if (projectData.requiredVotePercentage > 10000) {
+            revert CantGoAbove10000();
+        }
+        if(projectData.requiredVotePercentage == 0){
+            revert ZeroRequiredVotePercentage();
+        }
+        if (projectData.donationFee > 10000) {
+            revert CantGoAbove10000();
+        }
+        if(projectData.owner == address(0)){
+            revert ZeroAddress();
         }
 
         uint256 currentId = idCounter.current();
@@ -153,6 +162,9 @@ contract Crowdfunding is
      * @return uint boolean, is token supported
      */
     function isTokenSupported(address token) public view returns (uint256) {
+        if(token == address(0)){
+            return 0;
+        }
         return supportedTokens[token];
     }
 
