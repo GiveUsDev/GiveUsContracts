@@ -82,7 +82,6 @@ contract Crowdfunding is
         Treshold[] calldata tresholds
     )
         external
-        payable
         virtual
         override
         onlyRole(UPDATER_ROLE)
@@ -234,14 +233,14 @@ contract Crowdfunding is
     /**
      * @notice Triggers stopped state
      */
-    function pause() external payable onlyRole(PAUSER_ROLE) whenNotPaused {
+    function pause() external onlyRole(PAUSER_ROLE) whenNotPaused {
         _pause();
     }
 
     /**
      * @notice Returns to normal state
      */
-    function unpause() external payable onlyRole(PAUSER_ROLE) whenPaused {
+    function unpause() external onlyRole(PAUSER_ROLE) whenPaused {
         _unpause();
     }
 
@@ -322,7 +321,6 @@ contract Crowdfunding is
         uint256 id
     )
         external
-        payable
         virtual
         override
         onlyRole(UPDATER_ROLE)
@@ -432,7 +430,7 @@ contract Crowdfunding is
      */
     function addNewSupportedToken(
         address tokenAddress
-    ) external payable virtual override onlyRole(UPDATER_ROLE) {
+    ) external virtual override onlyRole(UPDATER_ROLE) {
         supportedTokens[tokenAddress] = 1;
         emit NewSupportedTokenAdded(tokenAddress);
     }
@@ -447,7 +445,6 @@ contract Crowdfunding is
         uint16 newFee
     )
         external
-        payable
         virtual
         override
         onlyRole(UPDATER_ROLE)
@@ -470,7 +467,6 @@ contract Crowdfunding is
         uint256 newStatus
     )
         external
-        payable
         virtual
         override
         onlyRole(UPDATER_ROLE)
@@ -489,7 +485,6 @@ contract Crowdfunding is
         uint256 newCooldown
     )
         external
-        payable
         virtual
         override
         onlyRole(UPDATER_ROLE)
@@ -504,7 +499,6 @@ contract Crowdfunding is
         uint256 toProjectID
     )
         external
-        payable
         virtual
         override
         onlyRole(UPDATER_ROLE)
