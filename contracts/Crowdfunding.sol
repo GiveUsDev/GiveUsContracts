@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
@@ -11,7 +12,7 @@ import {ICrowdfunding} from "./ICrowdfunding.sol";
 /**
  * @title A Crowdfunding Contract
  * @author Ludovic Domingues
- * @notice Contract used for Looting Plateform
+ * @notice Contract used for GiveUs Plateform
  */
 contract Crowdfunding is
     ICrowdfunding,
@@ -20,6 +21,7 @@ contract Crowdfunding is
     PausableUpgradeable
 {
     using CountersUpgradeable for CountersUpgradeable.Counter;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /**
      * @dev The following constants are used by AccessControl to check authorisations.
@@ -330,16 +332,9 @@ contract Crowdfunding is
             startTresholdVoting(projectId);
         }
 
-        if (
-            !IERC20Upgradeable(tokenSupported).transferFrom(
-                msg.sender,
-                address(this),
-                amount
-            )
-        ) {
-            revert TransferFailed();
-        }
-
+        IERC20Upgradeable(tokenSupported).safeTransferFrom(
+            msg.sender, address(this), amount);
+            
         emit DonatedToProject(msg.sender, projectId, donationAmount);
     }
 
@@ -436,14 +431,8 @@ contract Crowdfunding is
 
         projects[projectId] = project;
 
-        if (
-            !IERC20Upgradeable(exchangeTokenAddress).transfer(
-                msg.sender,
-                amountToWithdraw
-            )
-        ) {
-            revert TransferFailed();
-        }
+        IERC20Upgradeable(exchangeTokenAddress).safeTransfer(
+            msg.sender, amountToWithdraw);
 
         emit WithdrewFunds(
             msg.sender,
@@ -463,14 +452,8 @@ contract Crowdfunding is
 
         availableFees[tokenAddress] = 0;
 
-        if (
-            !IERC20Upgradeable(msg.sender).transfer(
-                msg.sender,
-                amountToWithdraw
-            )
-        ) {
-            revert TransferFailed();
-        }
+        IERC20Upgradeable(tokenAddress).safeTransfer(
+            msg.sender, amountToWithdraw);
 
         emit WithdrewFees(msg.sender, tokenAddress, amountToWithdraw);
     }
