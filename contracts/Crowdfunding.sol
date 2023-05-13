@@ -339,7 +339,7 @@ contract Crowdfunding is
     }
 
     /**
-     * @notice Function that starts a vote session for a treshold
+     * @notice Function that 
      * @param id ID of the project
      */
     function endTresholdVoting(
@@ -585,7 +585,7 @@ contract Crowdfunding is
     //The whenNotPaused is always Valid but i still put the modifier just in case
     function startTresholdVoting(
         uint256 id
-    ) private whenNotPaused validProjectId(id) {
+    ) private {
         Project memory project = projects[id];
         Treshold memory currentTreshold = projectsTresholds[id][
             project.currentTreshold
