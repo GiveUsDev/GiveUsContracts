@@ -35,10 +35,10 @@ contract CrowdfundingV2 is
         _;
     }
 
-    modifier validTresholdId(uint256 projectId, uint256 tresholdId) {
+    modifier validThresholdId(uint256 projectId, uint256 thresholdId) {
         Project memory project = projects[projectId];
-        if (project.nbOfTresholds <= tresholdId) {
-            revert InvalidTresholdId();
+        if (project.nbOfThresholds <= thresholdId) {
+            revert InvalidThresholdId();
         }
         _;
     }
@@ -52,12 +52,12 @@ contract CrowdfundingV2 is
 
     mapping(address => uint256) private supportedTokens;
     mapping(uint256 => Project) private projects; //get project by id
-    mapping(uint256 => mapping(uint256 => Treshold)) private projectsTresholds; //get project by id and treshold by id // each treshold has its own budget like [10,20,30] this means the total budget is 10+20+30 //can add alter a function to add new tresholds
+    mapping(uint256 => mapping(uint256 => Threshold)) private projectsThresholds; //get project by id and threshold by id // each threshold has its own budget like [10,20,30] this means the total budget is 10+20+30 //can add alter a function to add new thresholds
     mapping(address => mapping(uint256 => uint256)) private userDonations;
     mapping(address => mapping(uint256 => mapping(uint256 => uint256)))
-        private tresholdVoteFromAddress;
+        private thresholdVoteFromAddress;
     mapping(uint256 => mapping(uint256 => address[]))
-        private voterArrayForTreshold;
+        private voterArrayForThreshold;
     mapping(address => uint256) private availableFees;
 
     CountersUpgradeable.Counter private idCounter;
@@ -76,11 +76,11 @@ contract CrowdfundingV2 is
     /**
      * @notice Function used to Create a new Project
      * @param projectData Data used to create project
-     * @param tresholds Array of threshold for the project
+     * @param thresholds Array of threshold for the project
      */
     function createProject(
         ProjectData calldata projectData,
-        Treshold[] calldata tresholds
+        Threshold[] calldata thresholds
     )
         external
         virtual
@@ -89,8 +89,8 @@ contract CrowdfundingV2 is
         whenNotPaused
         supportedToken(projectData.exchangeTokenAddress)
     {
-        if (tresholds.length == 0) {
-            revert ZeroTresholds();
+        if (thresholds.length == 0) {
+            revert ZeroThresholds();
         }
         if (projectData.requiredAmount == 0) {
             revert ZeroRequiredAmount();
@@ -108,15 +108,15 @@ contract CrowdfundingV2 is
             0,
             0,
             0,
-            tresholds.length,
+            thresholds.length,
             projectData.requiredVotePercentage,
             projectData.voteCooldown, //TODO add require for voteCooldown
             0,
             projectData.donationFee
         );
 
-        for (uint256 i; i < tresholds.length; ) {
-            projectsTresholds[currentId][i] = tresholds[i];
+        for (uint256 i; i < thresholds.length; ) {
+            projectsThresholds[currentId][i] = thresholds[i];
             unchecked {
                 ++i;
             }
@@ -168,24 +168,24 @@ contract CrowdfundingV2 is
     }
 
     /**
-     * @notice Function that returns the project treshold of a given projectId and tresholdId
+     * @notice Function that returns the project threshold of a given projectId and thresholdId
      * @param projectId ID of the project
-     * @param tresholdId ID of the treshold
-     * @return Treshold the treshold for the given projectId && tresholdId
+     * @param thresholdId ID of the threshold
+     * @return Threshold the threshold for the given projectId && thresholdId
      */
-    function getProjectTresholds(
+    function getProjectThresholds(
         uint256 projectId,
-        uint256 tresholdId
+        uint256 thresholdId
     )
         external
         view
         virtual
         override
         validProjectId(projectId)
-        validTresholdId(projectId, tresholdId)
-        returns (Treshold memory)
+        validThresholdId(projectId, thresholdId)
+        returns (Threshold memory)
     {
-        return projectsTresholds[projectId][tresholdId];
+        return projectsThresholds[projectId][thresholdId];
     }
 
     /**
@@ -209,26 +209,26 @@ contract CrowdfundingV2 is
     }
 
     /**
-     * @notice Function that returns if a donator has voted on a treshold
+     * @notice Function that returns if a donator has voted on a threshold
      * @param voterAddress address of the donator/voter
      * @param projectId ID of the project
-     * @param tresholdId ID of the treshold
+     * @param thresholdId ID of the threshold
      * @return uint boolean, has voted ?
      */
-    function getTresholdVoteFromAddress(
+    function getThresholdVoteFromAddress(
         address voterAddress,
         uint256 projectId,
-        uint256 tresholdId
+        uint256 thresholdId
     )
         external
         view
         virtual
         override
         validProjectId(projectId)
-        validTresholdId(projectId, tresholdId)
+        validThresholdId(projectId, thresholdId)
         returns (uint256)
     {
-        return tresholdVoteFromAddress[voterAddress][projectId][tresholdId];
+        return thresholdVoteFromAddress[voterAddress][projectId][thresholdId];
     }
 
     function getFeesAvailableToWithdraw(
@@ -296,17 +296,17 @@ contract CrowdfundingV2 is
             donationAmount;
 
         project = projects[projectId];
-        Treshold memory currentTreshold = projectsTresholds[projectId][
-            project.currentTreshold
+        Threshold memory currentThreshold = projectsThresholds[projectId][
+            project.currentThreshold
         ];
 
         if (
-            project.currentAmount >= currentTreshold.budget &&
-            currentTreshold.voteSession.isVotingInSession == 0 &&
-            project.currentTreshold < project.nbOfTresholds &&
+            project.currentAmount >= currentThreshold.budget &&
+            currentThreshold.voteSession.isVotingInSession == 0 &&
+            project.currentThreshold < project.nbOfThresholds &&
             project.currentVoteCooldown <= block.timestamp
         ) {
-            startTresholdVoting(projectId);
+            startThresholdVoting(projectId);
         }
 
         if (
@@ -323,10 +323,10 @@ contract CrowdfundingV2 is
     }
 
     /**
-     * @notice Function that starts a vote session for a treshold
+     * @notice Function that starts a vote session for a threshold
      * @param id ID of the project
      */
-    function endTresholdVoting(
+    function endThresholdVoting(
         uint256 id
     )
         external
@@ -337,14 +337,14 @@ contract CrowdfundingV2 is
         validProjectId(id)
     {
         Project memory project = projects[id];
-        Treshold memory currentTreshold = projectsTresholds[id][
-            project.currentTreshold
+        Threshold memory currentThreshold = projectsThresholds[id][
+            project.currentThreshold
         ];
-        if (currentTreshold.voteSession.isVotingInSession == 0) {
+        if (currentThreshold.voteSession.isVotingInSession == 0) {
             revert NotInVotingSession();
         }
 
-        projectsTresholds[id][project.currentTreshold]
+        projectsThresholds[id][project.currentThreshold]
             .voteSession
             .isVotingInSession = 0;
 
@@ -352,11 +352,11 @@ contract CrowdfundingV2 is
     }
 
     /**
-     * @notice Function that allows a donator to vote for the current treshold of a project
+     * @notice Function that allows a donator to vote for the current threshold of a project
      * @param id ID of the project
      * @param vote true for positive vote, false for negative vote
      */
-    function voteForTreshold(
+    function voteForThreshold(
         uint256 id,
         uint256 vote
     ) external virtual override whenNotPaused validProjectId(id) {
@@ -368,27 +368,27 @@ contract CrowdfundingV2 is
         }
 
         Project memory project = projects[id];
-        Treshold memory currentTreshold = projectsTresholds[id][
-            project.currentTreshold
+        Threshold memory currentThreshold = projectsThresholds[id][
+            project.currentThreshold
         ];
 
-        if (currentTreshold.voteSession.isVotingInSession == 0) {
+        if (currentThreshold.voteSession.isVotingInSession == 0) {
             revert NotInVotingSession();
         }
 
         if (
-            tresholdVoteFromAddress[msg.sender][id][project.currentTreshold] ==
+            thresholdVoteFromAddress[msg.sender][id][project.currentThreshold] ==
             1
         ) {
             revert CanOnlyVoteOnce();
         }
 
-        VoteSession memory vs = currentTreshold.voteSession;
+        VoteSession memory vs = currentThreshold.voteSession;
         vote == 1 ? vs.positiveVotes++ : vs.negativeVotes++;
 
-        projectsTresholds[id][project.currentTreshold].voteSession = vs;
-        tresholdVoteFromAddress[msg.sender][id][project.currentTreshold] = 1;
-        voterArrayForTreshold[id][project.currentTreshold].push(msg.sender);
+        projectsThresholds[id][project.currentThreshold].voteSession = vs;
+        thresholdVoteFromAddress[msg.sender][id][project.currentThreshold] = 1;
+        voterArrayForThreshold[id][project.currentThreshold].push(msg.sender);
     }
 
     /**
@@ -576,19 +576,19 @@ contract CrowdfundingV2 is
 
     //The ID is always Valid but i still put the modifier just in case
     //The whenNotPaused is always Valid but i still put the modifier just in case
-    function startTresholdVoting(
+    function startThresholdVoting(
         uint256 id
     ) private whenNotPaused validProjectId(id) {
         Project memory project = projects[id];
-        Treshold memory currentTreshold = projectsTresholds[id][
-            project.currentTreshold
+        Threshold memory currentThreshold = projectsThresholds[id][
+            project.currentThreshold
         ];
 
         if (project.currentVoteCooldown > block.timestamp) {
             revert VoteCooldownNotOver();
         }
 
-        if (currentTreshold.voteSession.isVotingInSession == 1) {
+        if (currentThreshold.voteSession.isVotingInSession == 1) {
             revert AlreadyInVotingSession();
         }
 
@@ -596,15 +596,15 @@ contract CrowdfundingV2 is
             revert ProjectNotActive();
         }
 
-        if (project.currentAmount < currentTreshold.budget) {
-            revert TresholdNotReached();
+        if (project.currentAmount < currentThreshold.budget) {
+            revert ThresholdNotReached();
         }
 
-        if (project.currentTreshold >= project.nbOfTresholds) {
-            revert NoMoreTresholds();
+        if (project.currentThreshold >= project.nbOfThresholds) {
+            revert NoMoreThresholds();
         }
 
-        projectsTresholds[id][project.currentTreshold]
+        projectsThresholds[id][project.currentThreshold]
             .voteSession
             .isVotingInSession = 1;
     }
@@ -615,15 +615,15 @@ contract CrowdfundingV2 is
         uint256 id
     ) private whenNotPaused validProjectId(id) {
         Project memory project = projects[id];
-        Treshold memory currentTreshold = projectsTresholds[id][
-            project.currentTreshold
+        Threshold memory currentThreshold = projectsThresholds[id][
+            project.currentThreshold
         ];
 
         int256 positiveVotes = int256(
-            currentTreshold.voteSession.positiveVotes
+            currentThreshold.voteSession.positiveVotes
         );
         int256 negativeVotes = int256(
-            currentTreshold.voteSession.negativeVotes
+            currentThreshold.voteSession.negativeVotes
         );
 
         if (positiveVotes + negativeVotes == 0) {
@@ -633,7 +633,7 @@ contract CrowdfundingV2 is
         int256 finalAmount = positiveVotes - negativeVotes;
         int256 votesPercentage = int256(project.requiredVotePercentage);
 
-        projectsTresholds[id][project.currentTreshold]
+        projectsThresholds[id][project.currentThreshold]
             .voteSession
             .isVotingInSession = 0;
 
@@ -641,23 +641,23 @@ contract CrowdfundingV2 is
             (finalAmount * 10000) / (positiveVotes + negativeVotes) >
             votesPercentage
         ) {
-            project.availableToWithdraw += currentTreshold.budget++;
-            project.currentTreshold++;
+            project.availableToWithdraw += currentThreshold.budget++;
+            project.currentThreshold++;
 
             //updating global variables
             projects[id] = project;
 
-            if (project.currentTreshold < project.nbOfTresholds) {
-                currentTreshold = projectsTresholds[id][
-                    project.currentTreshold
+            if (project.currentThreshold < project.nbOfThresholds) {
+                currentThreshold = projectsThresholds[id][
+                    project.currentThreshold
                 ];
 
                 //check if we have enough funds to start next vote
                 if (
-                    project.currentAmount >= currentTreshold.budget &&
-                    currentTreshold.voteSession.isVotingInSession == 0
+                    project.currentAmount >= currentThreshold.budget &&
+                    currentThreshold.voteSession.isVotingInSession == 0
                 ) {
-                    startTresholdVoting(id);
+                    startThresholdVoting(id);
                 }
             }
         } else {
@@ -665,40 +665,40 @@ contract CrowdfundingV2 is
         }
     }
 
-    //cancel vote and stay on current treshold
+    //cancel vote and stay on current threshold
     function resetVoteSession(uint256 id) private validProjectId(id) {
         Project memory project = projects[id];
-        Treshold memory currentTreshold = projectsTresholds[id][
-            project.currentTreshold
+        Threshold memory currentThreshold = projectsThresholds[id][
+            project.currentThreshold
         ];
 
-        currentTreshold.voteSession.positiveVotes = 0;
-        currentTreshold.voteSession.negativeVotes = 0;
-        currentTreshold.voteSession.isVotingInSession = 0;
-        projectsTresholds[id][project.currentTreshold] = currentTreshold;
+        currentThreshold.voteSession.positiveVotes = 0;
+        currentThreshold.voteSession.negativeVotes = 0;
+        currentThreshold.voteSession.isVotingInSession = 0;
+        projectsThresholds[id][project.currentThreshold] = currentThreshold;
 
-        address[] memory tempVoterArrayForTreshold = voterArrayForTreshold[id][
-            project.currentTreshold
+        address[] memory tempVoterArrayForThreshold = voterArrayForThreshold[id][
+            project.currentThreshold
         ];
-        uint256 lenght = voterArrayForTreshold[id][project.currentTreshold]
+        uint256 length = voterArrayForThreshold[id][project.currentThreshold]
             .length;
         address voter;
 
-        for (uint256 i; i < lenght; ) {
-            voter = tempVoterArrayForTreshold[i];
-            tresholdVoteFromAddress[voter][id][project.currentTreshold] = 0;
+        for (uint256 i; i < length; ) {
+            voter = tempVoterArrayForThreshold[i];
+            thresholdVoteFromAddress[voter][id][project.currentThreshold] = 0;
             unchecked {
                 ++i;
             }
         }
 
-        delete voterArrayForTreshold[id][project.currentTreshold];
+        delete voterArrayForThreshold[id][project.currentThreshold];
 
         uint256 newCooldown = block.timestamp + project.voteCooldown;
 
         projects[id].currentVoteCooldown = newCooldown;
 
-        emit VoteSessionReset(id, project.currentTreshold, newCooldown);
+        emit VoteSessionReset(id, project.currentThreshold, newCooldown);
     }
 
     uint256 private myNewvariable;

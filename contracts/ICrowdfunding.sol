@@ -8,9 +8,9 @@ pragma solidity 0.8.17;
  */
 interface ICrowdfunding {
     error InvalidProjectId();
-    error InvalidTresholdId();
+    error InvalidThresholdId();
     error TokenNotSupported();
-    error ZeroTresholds();
+    error ZeroThresholds();
     error ZeroAddress();
     error ZeroRequiredAmount();
     error ZeroRequiredVotePercentage();
@@ -26,8 +26,8 @@ interface ICrowdfunding {
     error CanOnlyVoteOnce();
     error NoFundsToWithdraw();
     error CantGoAbove10000();
-    error TresholdNotReached();
-    error NoMoreTresholds();
+    error ThresholdNotReached();
+    error NoMoreThresholds();
     error CantDeliberateWithoutVotes();
     error InvalidUintAsBool();
     error NotProjectOwner();
@@ -38,7 +38,7 @@ interface ICrowdfunding {
     error IncorrectVotePercentage();
 
     /**
-     * @notice Event emited whenever a new project is created
+     * @notice Event emitted whenever a new project is created
      * @param projectID The id of the project
      * @param owner The owner of said project
      * @param projectName The name of the project
@@ -46,7 +46,7 @@ interface ICrowdfunding {
     event ProjectCreated(uint256 projectID, address owner, string projectName);
 
     /**
-     * @notice Event emited whenever a project receives a new donation
+     * @notice Event emitted whenever a project receives a new donation
      * @param donatorAddress The donor's address
      * @param projectId The id of the project
      * @param donationAmount The amount donated in wei
@@ -58,7 +58,7 @@ interface ICrowdfunding {
     );
 
     /**
-     * @notice Event emited whenever a project owner withdraws its funds
+     * @notice Event emitted whenever a project owner withdraws its funds
      * @param projectOwnerAddress The project owner's address
      * @param exchangeTokenAddress The address of the IERC20 contract
      * @param amountToWithdraw The amount withdrawn in wei
@@ -71,20 +71,20 @@ interface ICrowdfunding {
     );
 
     /**
-     * @notice Event emited whenever a project owner withdraws its funds
+     * @notice Event emitted whenever a project owner withdraws its funds
      * @param tokenAddress The address of the IERC20 contract
      */
     event NewSupportedTokenAdded(address tokenAddress);
 
     /**
-     * @notice Event emited whenever an admin changes the Donation Fee
+     * @notice Event emitted whenever an admin changes the Donation Fee
      * @param projectId The project's ID
      * @param newFee The new donationFee amount
      */
     event DonationFeeUpdated(uint256 projectId, uint16 newFee);
 
     /**
-     * @notice Event emited whenever a project is deactivated
+     * @notice Event emitted whenever a project is deactivated
      * @param projectId The project's ID
      * @param newStatus The new status of the project
      */
@@ -94,7 +94,7 @@ interface ICrowdfunding {
 
     event VoteSessionReset(
         uint256 projectId,
-        uint256 projectTreshold,
+        uint256 projectThreshold,
         uint256 currentCooldown
     );
 
@@ -104,7 +104,7 @@ interface ICrowdfunding {
         uint256 amountWithdrawn
     );
 
-    struct Treshold {
+    struct Threshold {
         uint256 budget;
         VoteSession voteSession;
     }
@@ -144,8 +144,8 @@ interface ICrowdfunding {
         uint256 currentAmount;
         uint256 availableToWithdraw;
         uint256 amountWithdrawn;
-        uint256 currentTreshold;
-        uint256 nbOfTresholds;
+        uint256 currentThreshold;
+        uint256 nbOfThresholds;
         uint256 requiredVotePercentage; // must be in basis points like 1% = 100 / 100% = 10000 / 0.01% = 1
         uint256 voteCooldown;
         uint256 currentVoteCooldown;
@@ -155,11 +155,11 @@ interface ICrowdfunding {
     /**
      * @notice Function used to Create a new Project
      * @param projectData Data used to create project
-     * @param tresholds Array of threshold for the project
+     * @param thresholds Array of threshold for the project
      */
     function createProject(
         ProjectData calldata projectData,
-        Treshold[] calldata tresholds
+        Threshold[] calldata thresholds
     ) external;
 
     /**
@@ -187,15 +187,15 @@ interface ICrowdfunding {
     ) external view returns (Project memory);
 
     /**
-     * @notice Function that returns the project treshold of a given projectId and tresholdId
+     * @notice Function that returns the project threshold of a given projectId and thresholdId
      * @param projectId ID of the project
-     * @param tresholdId ID of the treshold
-     * @return Treshold the treshold for the given projectId && tresholdId
+     * @param thresholdId ID of the threshold
+     * @return Threshold the threshold for the given projectId && thresholdId
      */
-    function getProjectTresholds(
+    function getProjectThresholds(
         uint256 projectId,
-        uint256 tresholdId
-    ) external view returns (Treshold memory);
+        uint256 thresholdId
+    ) external view returns (Threshold memory);
 
     /**
      * @notice Function that returns donated amount from a donatorAddress to a project
@@ -209,16 +209,16 @@ interface ICrowdfunding {
     ) external view returns (uint256);
 
     /**
-     * @notice Function that returns if a donator has voted on a treshold
+     * @notice Function that returns if a donator has voted on a threshold
      * @param voterAddress address of the donator/voter
      * @param projectId ID of the project
-     * @param tresholdId ID of the treshold
+     * @param thresholdId ID of the threshold
      * @return uint boolean, has voted ?
      */
-    function getTresholdVoteFromAddress(
+    function getThresholdVoteFromAddress(
         address voterAddress,
         uint256 projectId,
-        uint256 tresholdId
+        uint256 thresholdId
     ) external view returns (uint);
 
     function getFeesAvailableToWithdraw(
@@ -233,17 +233,17 @@ interface ICrowdfunding {
     function donateToProject(uint256 projectId, uint256 amount) external;
 
     /**
-     * @notice Function that starts a vote session for a treshold
+     * @notice Function that starts a vote session for a threshold
      * @param id ID of the project
      */
-    function endTresholdVoting(uint256 id) external;
+    function endThresholdVoting(uint256 id) external;
 
     /**
-     * @notice Function that allows a donator to vote for the current treshold of a project
+     * @notice Function that allows a donator to vote for the current threshold of a project
      * @param id ID of the project
      * @param vote true for positive vote, false for negative vote
      */
-    function voteForTreshold(uint256 id, uint vote) external;
+    function voteForThreshold(uint256 id, uint vote) external;
 
     /**
      * @notice Function that allows a project owner to withdraw his funds

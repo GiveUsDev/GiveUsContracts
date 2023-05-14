@@ -37,24 +37,24 @@ describe("Crowdfunding Contract", function () {
       negativeVotes: 0,
     }
 
-    const treshold1 = {
+    const threshold1 = {
       budget: 50000,
       voteSession: voteSession
     }
 
-    const treshold2 = {
+    const threshold2 = {
       budget: 100000,
       voteSession: voteSession
     }
 
-    const treshold3 = {
+    const threshold3 = {
       budget: 150000,
       voteSession: voteSession
     }
 
-    const tresholds = [treshold1, treshold2, treshold3];
-    const emptyTresholds = [treshold1];
-    emptyTresholds.pop();
+    const thresholds = [threshold1, threshold2, threshold3];
+    const emptyThresholds = [threshold1];
+    emptyThresholds.pop();
 
     let projectData = {
       owner: owner.address,
@@ -82,7 +82,7 @@ describe("Crowdfunding Contract", function () {
       donationFee: 0
     };
 
-    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, projectDataZero };
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc, projectDataZero };
   }
   async function createProjectDataZeroAmountAndUSDCFixture() {
     const { Crowdfunding, crowdfunding, owner, addr1, addr2 } = await loadFixture(deployCrowdfundingFixture);
@@ -96,24 +96,24 @@ describe("Crowdfunding Contract", function () {
       negativeVotes: 0,
     }
 
-    const treshold1 = {
+    const threshold1 = {
       budget: 50000,
       voteSession: voteSession
     }
 
-    const treshold2 = {
+    const threshold2 = {
       budget: 100000,
       voteSession: voteSession
     }
 
-    const treshold3 = {
+    const threshold3 = {
       budget: 150000,
       voteSession: voteSession
     }
 
-    const tresholds = [treshold1, treshold2, treshold3];
-    const emptyTresholds = [treshold1];
-    emptyTresholds.pop();
+    const thresholds = [threshold1, threshold2, threshold3];
+    const emptyThresholds = [threshold1];
+    emptyThresholds.pop();
 
     let projectData = {
       owner: owner.address,
@@ -141,23 +141,23 @@ describe("Crowdfunding Contract", function () {
       donationFee: 0
     };
 
-    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, projectDataZero };
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc, projectDataZero };
   }
   async function createProjectAndUSDCFixture() {
-    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
+    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
     await crowdfunding.addNewSupportedToken(usdc.address, { from: owner.address });
-    await crowdfunding.createProject(projectData, tresholds, { from: owner.address });
-    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc };
+    await crowdfunding.createProject(projectData, thresholds, { from: owner.address });
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc };
   }
   async function createProjectAndDonateMaxFixture() {
-    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
+    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
     const mintAmount = 100000;
     const donatedAmount = 100000;
     const projectID = 0;
     await usdc.mint(mintAmount);
     await usdc.approve(crowdfunding.address, mintAmount);
     await crowdfunding.donateToProject(projectID, donatedAmount);
-    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, mintAmount, donatedAmount, projectID };
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc, mintAmount, donatedAmount, projectID };
   }
   async function createProjectAndFundFixture() {
     const { Crowdfunding, crowdfunding, owner, addr1, addr2 } = await loadFixture(deployCrowdfundingFixture);
@@ -169,11 +169,11 @@ describe("Crowdfunding Contract", function () {
       positiveVotes: 0,
       negativeVotes: 0,
     }
-    const treshold1 = {
+    const threshold1 = {
       budget: 100000,
       voteSession: voteSession
     }
-    const tresholds = [treshold1];
+    const thresholds = [threshold1];
 
     let projectData = {
       owner: owner.address,
@@ -189,7 +189,7 @@ describe("Crowdfunding Contract", function () {
     };
 
     await crowdfunding.addNewSupportedToken(usdc.address, { from: owner.address });
-    await crowdfunding.createProject(projectData, tresholds, { from: owner.address });
+    await crowdfunding.createProject(projectData, thresholds, { from: owner.address });
     const mintAmount = requiredAmountToFund;
     const donatedAmount = requiredAmountToFund;
     const projectID = 0;
@@ -198,25 +198,25 @@ describe("Crowdfunding Contract", function () {
     await crowdfunding.donateToProject(projectID, donatedAmount);
 
     const pdata = await crowdfunding.getProject(projectID);
-    const currentTreshold = await crowdfunding.getProjectTresholds(projectID, pdata.currentTreshold);
-    expect(currentTreshold.voteSession.isVotingInSession).to.be.equal(1);
+    const currentThreshold = await crowdfunding.getProjectThresholds(projectID, pdata.currentThreshold);
+    expect(currentThreshold.voteSession.isVotingInSession).to.be.equal(1);
 
-    await crowdfunding.voteForTreshold(projectID, 1);
-    await crowdfunding.endTresholdVoting(projectID);
-    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, USDC, usdc, mintAmount, donatedAmount, projectID };
+    await crowdfunding.voteForThreshold(projectID, 1);
+    await crowdfunding.endThresholdVoting(projectID);
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, USDC, usdc, mintAmount, donatedAmount, projectID };
   }
   async function createProjectAndDonateFixture() {
-    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
+    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
     const mintAmount = 100000;
     const donatedAmount = 20000;
     const projectID = 0;
     await usdc.mint(mintAmount);
     await usdc.approve(crowdfunding.address, mintAmount);
     await crowdfunding.donateToProject(projectID, donatedAmount);
-    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, mintAmount, donatedAmount, projectID };
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc, mintAmount, donatedAmount, projectID };
   }
   async function createSecondProject() {
-    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectAndDonateFixture);
+    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectAndDonateFixture);
     
     const requiredAmountToFund = 300000;
 
@@ -226,23 +226,23 @@ describe("Crowdfunding Contract", function () {
       negativeVotes: 0,
     }
 
-    const treshold1 = {
+    const threshold1 = {
       budget: 50000,
       voteSession: voteSession
     }
 
-    const treshold2 = {
+    const threshold2 = {
       budget: 100000,
       voteSession: voteSession
     }
 
-    const treshold3 = {
+    const threshold3 = {
       budget: 150000,
       voteSession: voteSession
     }
 
-    const secondProjectTresholds = [treshold1, treshold2, treshold3];
-    emptyTresholds.pop();
+    const secondProjectThresholds = [threshold1, threshold2, threshold3];
+    emptyThresholds.pop();
 
     let secondProjectData = {
       owner: owner.address,
@@ -257,11 +257,11 @@ describe("Crowdfunding Contract", function () {
       donationFee: 0
     };
 
-    await crowdfunding.createProject(secondProjectData, secondProjectTresholds, { from: owner.address });
-    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, secondProjectData, secondProjectTresholds };
+    await crowdfunding.createProject(secondProjectData, secondProjectThresholds, { from: owner.address });
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc, secondProjectData, secondProjectThresholds };
   }
   async function createProjectWithDifferentToken() {
-    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectAndDonateFixture);
+    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectAndDonateFixture);
     
     const requiredAmountToFund = 300000;
 
@@ -271,23 +271,23 @@ describe("Crowdfunding Contract", function () {
       negativeVotes: 0,
     }
 
-    const treshold1 = {
+    const threshold1 = {
       budget: 50000,
       voteSession: voteSession
     }
 
-    const treshold2 = {
+    const threshold2 = {
       budget: 100000,
       voteSession: voteSession
     }
 
-    const treshold3 = {
+    const threshold3 = {
       budget: 150000,
       voteSession: voteSession
     }
 
-    const secondProjectTresholds = [treshold1, treshold2, treshold3];
-    emptyTresholds.pop();
+    const secondProjectThresholds = [threshold1, threshold2, threshold3];
+    emptyThresholds.pop();
 
     let thirdProjectData = {
       owner: owner.address,
@@ -303,18 +303,18 @@ describe("Crowdfunding Contract", function () {
     };
 
     await crowdfunding.addNewSupportedToken(owner.address, { from: owner.address });
-    await crowdfunding.createProject(thirdProjectData, secondProjectTresholds, { from: owner.address });
+    await crowdfunding.createProject(thirdProjectData, secondProjectThresholds, { from: owner.address });
     
-    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, thirdProjectData, secondProjectTresholds };
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc, thirdProjectData, secondProjectThresholds };
   }
   async function createProjectAndStartedVotingFixture() {
-    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, projectID } = await loadFixture(createProjectAndDonateMaxFixture);
-    const treshold = await crowdfunding.getProjectTresholds(projectID, 0);
-    expect(treshold.voteSession.isVotingInSession).to.be.equal(1);
-    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, projectID };
+    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc, projectID } = await loadFixture(createProjectAndDonateMaxFixture);
+    const threshold = await crowdfunding.getProjectThresholds(projectID, 0);
+    expect(threshold.voteSession.isVotingInSession).to.be.equal(1);
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc, projectID };
   }
   async function donateToProject3AndVote() {
-    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
+    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
     const mintAmount = 100000;
     const donatedAmount = 100000;
     const projectID = 0;
@@ -330,17 +330,17 @@ describe("Crowdfunding Contract", function () {
     await usdc.connect(addr2).approve(crowdfunding.address, mintAmount);
     await crowdfunding.connect(addr2).donateToProject(projectID, donatedAmount);
 
-    const treshold = await crowdfunding.getProjectTresholds(projectID, 0);
-    expect(treshold.voteSession.isVotingInSession).to.be.equal(1);
+    const threshold = await crowdfunding.getProjectThresholds(projectID, 0);
+    expect(threshold.voteSession.isVotingInSession).to.be.equal(1);
 
-    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, mintAmount, donatedAmount, projectID };
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc, mintAmount, donatedAmount, projectID };
   }
   async function donateToProject3AndHasVoted() {
-    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(donateToProject3AndVote);
+    const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(donateToProject3AndVote);
     const projectID = 0;
     const voteValue = 1;
-    await crowdfunding.connect(owner).voteForTreshold(0, voteValue);
-    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc, projectID, voteValue};
+    await crowdfunding.connect(owner).voteForThreshold(0, voteValue);
+    return { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc, projectID, voteValue};
   }
 
   describe("Upgrade", function() {
@@ -398,7 +398,7 @@ describe("Crowdfunding Contract", function () {
 
     describe("pause()", function () {
       it("should not pause, revert : Access Control", async () => {
-        const { crowdfunding, owner, addr1, addr2, projectData, tresholds } = await loadFixture(createProjectDataAndUSDCFixture);
+        const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
         let PAUSER_ROLE = await crowdfunding.connect(addr1).PAUSER_ROLE();
         await expectRevert(crowdfunding.connect(addr1).pause(),
           "AccessControl: account " +
@@ -409,13 +409,13 @@ describe("Crowdfunding Contract", function () {
       });
 
       it("should not pause twice, revert : Pausable: paused", async () => {
-        const { crowdfunding, owner, addr1, addr2, projectData, tresholds } = await loadFixture(createProjectDataAndUSDCFixture);
+        const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
         await crowdfunding.connect(owner).pause();
         await expectRevert(crowdfunding.connect(owner).pause(), "Pausable: paused");
       });
 
       it("should pause", async () => {
-        const { crowdfunding, owner, addr1, addr2, projectData, tresholds } = await loadFixture(createProjectDataAndUSDCFixture);
+        const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
         await crowdfunding.connect(owner).pause();
         expect(await crowdfunding.connect(owner).paused()).to.be.equal(true);
       });
@@ -423,7 +423,7 @@ describe("Crowdfunding Contract", function () {
 
     describe("unpause()", function () {
       it("should not unpause, revert : Access Control", async () => {
-        const { crowdfunding, owner, addr1, addr2, projectData, tresholds } = await loadFixture(createProjectDataAndUSDCFixture);
+        const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
         let PAUSER_ROLE = await crowdfunding.connect(addr1).PAUSER_ROLE();
         await crowdfunding.connect(owner).pause();
         await expectRevert(crowdfunding.connect(addr1).unpause(),
@@ -435,12 +435,12 @@ describe("Crowdfunding Contract", function () {
       });
 
       it("should not unpause not paused, revert : Pausable: not paused", async () => {
-        const { crowdfunding, owner, addr1, addr2, projectData, tresholds } = await loadFixture(createProjectDataAndUSDCFixture);
+        const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
         await expectRevert(crowdfunding.connect(owner).unpause(), "Pausable: not paused");
       });
 
       it("should unpause", async () => {
-        const { crowdfunding, owner, addr1, addr2, projectData, tresholds } = await loadFixture(createProjectDataAndUSDCFixture);
+        const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
         await crowdfunding.connect(owner).pause();
         await crowdfunding.connect(owner).unpause();
         expect(await crowdfunding.connect(owner).paused()).to.be.equal(false);
@@ -450,9 +450,9 @@ describe("Crowdfunding Contract", function () {
 
     describe("createProject(Project calldata _project)", function () {
       it("Should not create project, revert : Missing Role", async function () {
-        const { crowdfunding, owner, addr1, addr2, projectData, tresholds } = await loadFixture(createProjectDataAndUSDCFixture);
+        const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
         let UPDATER_ROLE = await crowdfunding.connect(addr1).UPDATER_ROLE();
-        await expectRevert(crowdfunding.connect(addr1).createProject(projectData, tresholds),
+        await expectRevert(crowdfunding.connect(addr1).createProject(projectData, thresholds),
           "AccessControl: account " +
           addr1.address.toLowerCase() +
           " is missing role " +
@@ -460,33 +460,33 @@ describe("Crowdfunding Contract", function () {
       });
 
       it("Should not create project, revert : Paused", async function () {
-        const { crowdfunding, owner, addr1, addr2, projectData, tresholds } = await loadFixture(createProjectDataAndUSDCFixture);
+        const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
         await crowdfunding.connect(owner).pause();
-        await expectRevert(crowdfunding.connect(owner).createProject(projectData, tresholds), "Pausable: paused");
+        await expectRevert(crowdfunding.connect(owner).createProject(projectData, thresholds), "Pausable: paused");
       });
 
       it("Should not create project, revert : Token not supported", async function () {
-        const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds } = await loadFixture(createProjectDataAndUSDCFixture);
-        await expect(crowdfunding.createProject(projectData, tresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'TokenNotSupported');
+        const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
+        await expect(crowdfunding.createProject(projectData, thresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'TokenNotSupported');
       });
 
-      it("Should not create project, revert : Need at least one Treshold", async function () {
-        const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, emptyTresholds, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
+      it("Should not create project, revert : Need at least one Threshold", async function () {
+        const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, emptyThresholds, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
         await crowdfunding.addNewSupportedToken(usdc.address, { from: owner.address });
-        await expect(crowdfunding.createProject(projectData, emptyTresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'ZeroTresholds');
+        await expect(crowdfunding.createProject(projectData, emptyThresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'ZeroThresholds');
       });
 
       it("Should not create project, revert : ZeroRequiredAmount", async function () {
-        const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectDataZero, tresholds, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
+        const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectDataZero, thresholds, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
         await crowdfunding.addNewSupportedToken(usdc.address, { from: owner.address });
-        await expect(crowdfunding.createProject(projectDataZero, tresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'ZeroRequiredAmount');
+        await expect(crowdfunding.createProject(projectDataZero, thresholds, { from: owner.address })).to.be.revertedWithCustomError(Crowdfunding, 'ZeroRequiredAmount');
       });
 
       it("Should create project", async function () {
-        const { crowdfunding, owner, addr1, addr2, projectData, tresholds, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
+        const { crowdfunding, owner, addr1, addr2, projectData, thresholds, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
 
         await crowdfunding.addNewSupportedToken(usdc.address, { from: owner.address });
-        await crowdfunding.createProject(projectData, tresholds, { from: owner.address });
+        await crowdfunding.createProject(projectData, thresholds, { from: owner.address });
 
         const projectDataReturned = await crowdfunding.getProject(0, { from: owner.address });
 
@@ -497,16 +497,16 @@ describe("Crowdfunding Contract", function () {
         expect(projectData.description).to.be.equal(projectDataReturned.description);
         expect(projectData.requiredAmount).to.be.equal(projectDataReturned.requiredAmount);
         expect(projectDataReturned.currentAmount).to.be.equal(0);
-        expect(projectDataReturned.currentTreshold).to.be.equal(0);
-        expect(projectDataReturned.nbOfTresholds).to.be.equal(3);
+        expect(projectDataReturned.currentThreshold).to.be.equal(0);
+        expect(projectDataReturned.nbOfThresholds).to.be.equal(3);
         expect(projectData.requiredVotePercentage).to.be.equal(projectDataReturned.requiredVotePercentage);
 
         for (let i = 0; i < 3; i++) {
-          const tresholdDataReturned = await crowdfunding.getProjectTresholds(0, i);
-          expect(tresholdDataReturned.budget).to.be.equal(tresholds[i].budget);
+          const thresholdDataReturned = await crowdfunding.getProjectThresholds(0, i);
+          expect(thresholdDataReturned.budget).to.be.equal(thresholds[i].budget);
 
-          const returnedVotingSession = tresholdDataReturned.voteSession;
-          const votingSession = tresholds[i].voteSession;
+          const returnedVotingSession = thresholdDataReturned.voteSession;
+          const votingSession = thresholds[i].voteSession;
           expect(returnedVotingSession.isVotingInSession).to.be.equal(votingSession.isVotingInSession);
           expect(returnedVotingSession.positiveVotes).to.be.equal(votingSession.positiveVotes);
           expect(returnedVotingSession.negativeVotes).to.be.equal(votingSession.negativeVotes);
@@ -542,32 +542,32 @@ describe("Crowdfunding Contract", function () {
     });
     describe("donateToProject(uint id, uint amount)", function () {
       it("Shouldnt donate, revert : Paused", async function () {
-        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
+        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
         await crowdfunding.connect(owner).pause();
         await expectRevert(crowdfunding.donateToProject(0, 10), "Pausable: paused");
       });
       it("Shouldnt donate, revert : Invalid Project Id", async function () {
-        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
+        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
         await expect(crowdfunding.donateToProject(0, 10)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
       });
       it("Shouldnt donate, revert : Min amount is 1", async function () {
-        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
+        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
         await expect(crowdfunding.donateToProject(0, 0)).to.be.revertedWithCustomError(Crowdfunding, 'ZeroAmount');
       });
       
       it("Shouldnt donate, revert : Project not Active", async function () {
-        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
+        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
         await crowdfunding.updateProjectStatus(0, 0);
         await expect(crowdfunding.donateToProject(0, 100)).to.be.revertedWithCustomError(Crowdfunding, 'ProjectNotActive');
       });
       it("Shouldnt donate, revert : Amount too small", async function () {
-        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
+        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
         const mintAmount = 100000;
         await usdc.mint(mintAmount);
         await expect(crowdfunding.donateToProject(0, 5000)).to.be.revertedWithCustomError(Crowdfunding, 'AmountTooSmall');
       });
       it("Shouldnt donate, revert : Need to approve allowance first", async function () {
-        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, tresholds, emptyTresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
+        const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectAndUSDCFixture);
         const mintAmount = 100000;
         await usdc.mint(mintAmount);
         await expect(crowdfunding.donateToProject(0, 20000)).to.be.revertedWithCustomError(Crowdfunding, 'AllowanceNotApproved');
@@ -583,9 +583,9 @@ describe("Crowdfunding Contract", function () {
         expect(project0.currentAmount).to.be.equal(donatedAmount);
 
         const projectData = await crowdfunding.getProject(projectID);
-        const currentTreshold = await crowdfunding.getProjectTresholds(projectID, projectData.currentTreshold);
+        const currentThreshold = await crowdfunding.getProjectThresholds(projectID, projectData.currentThreshold);
 
-        expect(currentTreshold.voteSession.isVotingInSession).to.be.equal(0);
+        expect(currentThreshold.voteSession.isVotingInSession).to.be.equal(0);
       });
 
       it("Should donate put voteInSession", async function () {
@@ -596,9 +596,9 @@ describe("Crowdfunding Contract", function () {
         await usdc.approve(crowdfunding.address, donationAmount);
         await crowdfunding.donateToProject(projectID, donationAmount);
         const projectData = await crowdfunding.getProject(projectID);
-        const currentTreshold = await crowdfunding.getProjectTresholds(projectID, projectData.currentTreshold);
+        const currentThreshold = await crowdfunding.getProjectThresholds(projectID, projectData.currentThreshold);
 
-        expect(currentTreshold.voteSession.isVotingInSession).to.be.equal(1);
+        expect(currentThreshold.voteSession.isVotingInSession).to.be.equal(1);
       });
 
       it("Should donate and emit Event", async function () {
@@ -633,91 +633,91 @@ describe("Crowdfunding Contract", function () {
         expect(await crowdfunding.isTokenSupported(owner.address)).to.be.equal(0);
       });
     });
-    describe("voteForTreshold(uint256 id, bool vote)", function () {
+    describe("voteForThreshold(uint256 id, bool vote)", function () {
       it("Shouldnt vote, revert : Paused", async function () {
         const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
         await crowdfunding.pause();
-        await expectRevert(crowdfunding.connect(owner).voteForTreshold(projectID, 1), "Pausable: paused");
+        await expectRevert(crowdfunding.connect(owner).voteForThreshold(projectID, 1), "Pausable: paused");
       });
       it("Shouldnt vote, revert : Only Donators can vote", async function () {
         const {Crowdfunding, crowdfunding, addr1, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
-        await expect(crowdfunding.connect(addr1).voteForTreshold(projectID, 1)).to.be.revertedWithCustomError(Crowdfunding, 'NotADonator');
+        await expect(crowdfunding.connect(addr1).voteForThreshold(projectID, 1)).to.be.revertedWithCustomError(Crowdfunding, 'NotADonator');
       });
       it("Shouldnt vote, revert : Not in Voting Session", async function () {
         const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
-        await expect(crowdfunding.connect(owner).voteForTreshold(projectID, 1)).to.be.revertedWithCustomError(Crowdfunding, 'NotInVotingSession');
+        await expect(crowdfunding.connect(owner).voteForThreshold(projectID, 1)).to.be.revertedWithCustomError(Crowdfunding, 'NotInVotingSession');
       });
       it("Shouldnt vote, revert : InvalidProjectId", async function () {
         const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
-        await expect(crowdfunding.connect(owner).voteForTreshold(5000, 1)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
+        await expect(crowdfunding.connect(owner).voteForThreshold(5000, 1)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
       });
       it("Shouldnt vote, revert : Can Only Vote Once", async function () {
         const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
-        await crowdfunding.voteForTreshold(projectID, 1);
-        await expect(crowdfunding.connect(owner).voteForTreshold(projectID, 1)).to.be.revertedWithCustomError(Crowdfunding, 'CanOnlyVoteOnce');
+        await crowdfunding.voteForThreshold(projectID, 1);
+        await expect(crowdfunding.connect(owner).voteForThreshold(projectID, 1)).to.be.revertedWithCustomError(Crowdfunding, 'CanOnlyVoteOnce');
       });
       it("Shouldnt vote, revert : Invalid Uint", async function () {
         const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
-        await expect(crowdfunding.connect(owner).voteForTreshold(projectID, 2)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidUintAsBool');
+        await expect(crowdfunding.connect(owner).voteForThreshold(projectID, 2)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidUintAsBool');
       });
       it("Should vote positive", async function () {
         const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
-        const positiveVotes = (await crowdfunding.getProjectTresholds(projectID, 0)).voteSession.positiveVotes;
-        await crowdfunding.voteForTreshold(projectID, 1);
-        expect((await crowdfunding.getProjectTresholds(projectID, 0)).voteSession.positiveVotes).to.be.equal(positiveVotes + BN(1));
-        expect(await crowdfunding.getTresholdVoteFromAddress(owner.address, projectID, 0)).to.be.equal(1);
+        const positiveVotes = (await crowdfunding.getProjectThresholds(projectID, 0)).voteSession.positiveVotes;
+        await crowdfunding.voteForThreshold(projectID, 1);
+        expect((await crowdfunding.getProjectThresholds(projectID, 0)).voteSession.positiveVotes).to.be.equal(positiveVotes + BN(1));
+        expect(await crowdfunding.getThresholdVoteFromAddress(owner.address, projectID, 0)).to.be.equal(1);
       });
       it("Should vote negative", async function () {
         const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
-        const negativeVotes = (await crowdfunding.getProjectTresholds(projectID, 0)).voteSession.negativeVotes;
-        await crowdfunding.voteForTreshold(projectID, 0);
-        expect((await crowdfunding.getProjectTresholds(projectID, 0)).voteSession.negativeVotes).to.be.equal(negativeVotes + BN(1));
-        expect(await crowdfunding.getTresholdVoteFromAddress(owner.address, projectID, 0)).to.be.equal(1);
+        const negativeVotes = (await crowdfunding.getProjectThresholds(projectID, 0)).voteSession.negativeVotes;
+        await crowdfunding.voteForThreshold(projectID, 0);
+        expect((await crowdfunding.getProjectThresholds(projectID, 0)).voteSession.negativeVotes).to.be.equal(negativeVotes + BN(1));
+        expect(await crowdfunding.getThresholdVoteFromAddress(owner.address, projectID, 0)).to.be.equal(1);
       });
     });
-    xdescribe("startTresholdVoting(uint256 id)", function () {
+    xdescribe("startThresholdVoting(uint256 id)", function () {
       it("Shouldnt start voting, revert : You are not allowed", async function () {
         const { crowdfunding, addr1, projectID } = await loadFixture(createProjectAndDonateFixture);
-        await expectRevert(crowdfunding.connect(addr1).startTresholdVoting(projectID), "You are not allowed");
+        await expectRevert(crowdfunding.connect(addr1).startThresholdVoting(projectID), "You are not allowed");
       });
 
       it("Shouldnt start voting, revert : Already in Voting Session", async function () {
         const { crowdfunding, projectID } = await loadFixture(createProjectAndDonateMaxFixture);
-        await crowdfunding.startTresholdVoting(projectID);
-        await expectRevert(crowdfunding.startTresholdVoting(projectID), "Already in Voting Session");
+        await crowdfunding.startThresholdVoting(projectID);
+        await expectRevert(crowdfunding.startThresholdVoting(projectID), "Already in Voting Session");
       });
 
       it("Shouldnt start voting, revert : Project Funded or Inactive", async function () {
         const { crowdfunding, projectID } = await loadFixture(createProjectAndFundFixture);
-        await expectRevert(crowdfunding.startTresholdVoting(projectID), "Project Funded or Inactive");
+        await expectRevert(crowdfunding.startThresholdVoting(projectID), "Project Funded or Inactive");
       });
 
-      it("Shouldnt start voting, revert : Treshold not reached yet", async function () {
+      it("Shouldnt start voting, revert : Threshold not reached yet", async function () {
         const { crowdfunding, projectID } = await loadFixture(createProjectAndDonateFixture);
-        await expectRevert(crowdfunding.startTresholdVoting(projectID), "Treshold not reached yet");
+        await expectRevert(crowdfunding.startThresholdVoting(projectID), "Threshold not reached yet");
       });
 
       it("Should start voting", async function () {
         const { crowdfunding, projectID } = await loadFixture(createProjectAndDonateMaxFixture);
-        await crowdfunding.startTresholdVoting(projectID);
-        const treshold = await crowdfunding.getProjectTresholds(projectID, 0);
-        expect(treshold.voteSession.isVotingInSession).to.be.equal(true);
+        await crowdfunding.startThresholdVoting(projectID);
+        const threshold = await crowdfunding.getProjectThresholds(projectID, 0);
+        expect(threshold.voteSession.isVotingInSession).to.be.equal(true);
       });
     });
-    describe("endTresholdVoting(uint256 id)", function () {
+    describe("endThresholdVoting(uint256 id)", function () {
       it("Shouldnt end voting, revert : Paused", async function () {
         const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
         await crowdfunding.pause();
-        await expectRevert(crowdfunding.connect(owner).endTresholdVoting(projectID),"Pausable: paused");
+        await expectRevert(crowdfunding.connect(owner).endThresholdVoting(projectID),"Pausable: paused");
       });
       it("Shouldnt end voting, revert : InvalidProjectId", async function () {
         const { crowdfunding, Crowdfunding, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
-        await expect(crowdfunding.endTresholdVoting(5000)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
+        await expect(crowdfunding.endThresholdVoting(5000)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
       });
       it("Shouldnt end voting, revert : You are not allowed", async function () {
         const { crowdfunding, addr1, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
         let UPDATER_ROLE = await crowdfunding.connect(addr1).UPDATER_ROLE();
-        await expectRevert(crowdfunding.connect(addr1).endTresholdVoting(projectID),
+        await expectRevert(crowdfunding.connect(addr1).endThresholdVoting(projectID),
           "AccessControl: account " +
           addr1.address.toLowerCase() +
           " is missing role " +
@@ -725,61 +725,61 @@ describe("Crowdfunding Contract", function () {
       });
       it("Shouldnt end voting, revert : Not in Voting Session", async function () {
         const {Crowdfunding, crowdfunding, addr1, projectID } = await loadFixture(createProjectAndDonateFixture);
-        await expect(crowdfunding.endTresholdVoting(projectID)).to.be.revertedWithCustomError(Crowdfunding, 'NotInVotingSession');
+        await expect(crowdfunding.endThresholdVoting(projectID)).to.be.revertedWithCustomError(Crowdfunding, 'NotInVotingSession');
       });
       it("Should end voting, & set voting session false", async function () {
         const { crowdfunding, addr1, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
-        await crowdfunding.voteForTreshold(projectID, 1);
-        await crowdfunding.endTresholdVoting(projectID);
-        const treshold = await crowdfunding.getProjectTresholds(projectID, 0);
-        expect(treshold.voteSession.isVotingInSession).to.be.equal(0);
+        await crowdfunding.voteForThreshold(projectID, 1);
+        await crowdfunding.endThresholdVoting(projectID);
+        const threshold = await crowdfunding.getProjectThresholds(projectID, 0);
+        expect(threshold.voteSession.isVotingInSession).to.be.equal(0);
       });
     });
     describe("DeliberateVote(uint256 id)", function () {
       it("Shouldnt deliberate, revert : Cant deliberate without votes", async function () {
         const {Crowdfunding, crowdfunding, addr1, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
-        await expect(crowdfunding.endTresholdVoting(projectID)).to.be.revertedWithCustomError(Crowdfunding, 'CantDeliberateWithoutVotes');
+        await expect(crowdfunding.endThresholdVoting(projectID)).to.be.revertedWithCustomError(Crowdfunding, 'CantDeliberateWithoutVotes');
       });
       it("Should deliberate positive 1-0", async function () {
         const { crowdfunding, owner, usdc, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
-        const currentTreshold = 0;
-        const tresholdBudget = (await crowdfunding.getProjectTresholds(projectID, currentTreshold)).budget;
-        expect((await crowdfunding.getProject(projectID)).currentTreshold).to.be.equal(currentTreshold);
-        await crowdfunding.voteForTreshold(projectID, 1);
-        await crowdfunding.endTresholdVoting(projectID);
-        const treshold = await crowdfunding.getProjectTresholds(projectID, currentTreshold);
-        expect(treshold.voteSession.isVotingInSession).to.be.equal(0);
+        const currentThreshold = 0;
+        const thresholdBudget = (await crowdfunding.getProjectThresholds(projectID, currentThreshold)).budget;
+        expect((await crowdfunding.getProject(projectID)).currentThreshold).to.be.equal(currentThreshold);
+        await crowdfunding.voteForThreshold(projectID, 1);
+        await crowdfunding.endThresholdVoting(projectID);
+        const threshold = await crowdfunding.getProjectThresholds(projectID, currentThreshold);
+        expect(threshold.voteSession.isVotingInSession).to.be.equal(0);
         const projectdata = await crowdfunding.getProject(projectID);
-        expect(projectdata.currentTreshold).to.be.equal(currentTreshold + 1);
-        expect(projectdata.availableToWithdraw).to.be.equal(tresholdBudget);
+        expect(projectdata.currentThreshold).to.be.equal(currentThreshold + 1);
+        expect(projectdata.availableToWithdraw).to.be.equal(thresholdBudget);
       });
 
       it("Should deliberate negative whith 0-1", async function () {
         const { crowdfunding, owner, usdc, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
-        const currentTreshold = 0;
-        expect((await crowdfunding.getProject(projectID)).currentTreshold).to.be.equal(currentTreshold);
-        await crowdfunding.voteForTreshold(projectID, 0);
-        await crowdfunding.endTresholdVoting(projectID);
-        const treshold = await crowdfunding.getProjectTresholds(projectID, currentTreshold);
-        expect(treshold.voteSession.isVotingInSession).to.be.equal(0);
+        const currentThreshold = 0;
+        expect((await crowdfunding.getProject(projectID)).currentThreshold).to.be.equal(currentThreshold);
+        await crowdfunding.voteForThreshold(projectID, 0);
+        await crowdfunding.endThresholdVoting(projectID);
+        const threshold = await crowdfunding.getProjectThresholds(projectID, currentThreshold);
+        expect(threshold.voteSession.isVotingInSession).to.be.equal(0);
         const projectdata = await crowdfunding.getProject(projectID);
-        expect(projectdata.currentTreshold).to.be.equal(currentTreshold);
+        expect(projectdata.currentThreshold).to.be.equal(currentThreshold);
         expect(projectdata.availableToWithdraw).to.be.equal(0);
       });
 
       it("Should deliberate equal whith 1-1 with 50%", async function () {
         const { crowdfunding, owner, addr1, usdc, projectID } = await loadFixture(donateToProject3AndVote);
-        const currentTreshold = 0;
-        expect((await crowdfunding.getProject(projectID)).currentTreshold).to.be.equal(currentTreshold);
+        const currentThreshold = 0;
+        expect((await crowdfunding.getProject(projectID)).currentThreshold).to.be.equal(currentThreshold);
 
-        await crowdfunding.voteForTreshold(projectID, 1);
-        await crowdfunding.connect(addr1).voteForTreshold(projectID, 0);
+        await crowdfunding.voteForThreshold(projectID, 1);
+        await crowdfunding.connect(addr1).voteForThreshold(projectID, 0);
 
-        await crowdfunding.endTresholdVoting(projectID);
-        const treshold = await crowdfunding.getProjectTresholds(projectID, currentTreshold);
-        expect(treshold.voteSession.isVotingInSession).to.be.equal(0);
+        await crowdfunding.endThresholdVoting(projectID);
+        const threshold = await crowdfunding.getProjectThresholds(projectID, currentThreshold);
+        expect(threshold.voteSession.isVotingInSession).to.be.equal(0);
         const projectdata = await crowdfunding.getProject(projectID);
-        expect(projectdata.currentTreshold).to.be.equal(currentTreshold);
+        expect(projectdata.currentThreshold).to.be.equal(currentThreshold);
         expect(projectdata.availableToWithdraw).to.be.equal(0);
       });
 
@@ -952,45 +952,45 @@ describe("Crowdfunding Contract", function () {
         expect(project.assoName).to.be.equal(projectData.assoName);
       });
     });
-    describe("getProjectTresholds(uint256 projectId, uint256 tresholdId)", function () {
-      it("Shouldnt getProjectTresholds, revert : Invalid Project Id", async function () {
+    describe("getProjectThresholds(uint256 projectId, uint256 thresholdId)", function () {
+      it("Shouldnt getProjectThresholds, revert : Invalid Project Id", async function () {
         const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
         const invalidProjectID = 100;
-        await expect(crowdfunding.connect(owner).getProjectTresholds(invalidProjectID, 0)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
+        await expect(crowdfunding.connect(owner).getProjectThresholds(invalidProjectID, 0)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
       });
 
-      it("Shouldnt getProjectTresholds, revert : Invalid Treshold Id", async function () {
+      it("Shouldnt getProjectThresholds, revert : Invalid Threshold Id", async function () {
         const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
-        const invalidTresholdID = 100;
-        await expect(crowdfunding.connect(owner).getProjectTresholds(projectID, invalidTresholdID)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidTresholdId');
+        const invalidThresholdID = 100;
+        await expect(crowdfunding.connect(owner).getProjectThresholds(projectID, invalidThresholdID)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidThresholdId');
       });
 
-      it("Should getProjectTresholds", async function () {
-        const { crowdfunding, owner, projectID, tresholds } = await loadFixture(createProjectAndDonateFixture);
-        const treshold = await crowdfunding.connect(owner).getProjectTresholds(projectID, 0);
-        expect(treshold.budget).to.be.equal(tresholds[0].budget);
-        expect(treshold.voteSession.isVotingInSession).to.be.equal(tresholds[0].voteSession.isVotingInSession);
-        expect(treshold.voteSession.positiveVotes).to.be.equal(tresholds[0].voteSession.positiveVotes);
-        expect(treshold.voteSession.negativeVotes).to.be.equal(tresholds[0].voteSession.negativeVotes);
+      it("Should getProjectThresholds", async function () {
+        const { crowdfunding, owner, projectID, thresholds } = await loadFixture(createProjectAndDonateFixture);
+        const threshold = await crowdfunding.connect(owner).getProjectThresholds(projectID, 0);
+        expect(threshold.budget).to.be.equal(thresholds[0].budget);
+        expect(threshold.voteSession.isVotingInSession).to.be.equal(thresholds[0].voteSession.isVotingInSession);
+        expect(threshold.voteSession.positiveVotes).to.be.equal(thresholds[0].voteSession.positiveVotes);
+        expect(threshold.voteSession.negativeVotes).to.be.equal(thresholds[0].voteSession.negativeVotes);
       });
     });
-    describe("getTresholdVoteFromAddress(address voterAddress, uint256 projectId, uint256 tresholdId)", function () {
-    it("Shouldnt getTresholdVoteFromAddress, revert : Invalid Project Id", async function () {
+    describe("getThresholdVoteFromAddress(address voterAddress, uint256 projectId, uint256 thresholdId)", function () {
+    it("Shouldnt getThresholdVoteFromAddress, revert : Invalid Project Id", async function () {
       const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
       const invalidProjectID = 100;
-      await expect(crowdfunding.connect(owner).getTresholdVoteFromAddress(owner.address, invalidProjectID, 0)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
+      await expect(crowdfunding.connect(owner).getThresholdVoteFromAddress(owner.address, invalidProjectID, 0)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidProjectId');
     });
 
-    it("Shouldnt getTresholdVoteFromAddress, revert : Invalid Treshold Id", async function () {
+    it("Shouldnt getThresholdVoteFromAddress, revert : Invalid Threshold Id", async function () {
       const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);
-      const invalidTresholdID = 100;
-      await expect(crowdfunding.connect(owner).getTresholdVoteFromAddress(owner.address, projectID, invalidTresholdID)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidTresholdId');
+      const invalidThresholdID = 100;
+      await expect(crowdfunding.connect(owner).getThresholdVoteFromAddress(owner.address, projectID, invalidThresholdID)).to.be.revertedWithCustomError(Crowdfunding, 'InvalidThresholdId');
     });
 
-    it("Should getTresholdVoteFromAddress", async function () {
-      const { crowdfunding, owner, projectID, tresholds, voteValue } = await loadFixture(donateToProject3AndHasVoted);
-      const tresholdVote = await crowdfunding.connect(owner).getTresholdVoteFromAddress(owner.address, projectID, 0);
-      expect(tresholdVote).to.be.equal(voteValue);
+    it("Should getThresholdVoteFromAddress", async function () {
+      const { crowdfunding, owner, projectID, thresholds, voteValue } = await loadFixture(donateToProject3AndHasVoted);
+      const thresholdVote = await crowdfunding.connect(owner).getThresholdVoteFromAddress(owner.address, projectID, 0);
+      expect(thresholdVote).to.be.equal(voteValue);
     });
     });
     describe("getUserDonations(address donatorAddress, uint256 projectId)", function () {
