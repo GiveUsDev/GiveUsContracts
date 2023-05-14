@@ -672,7 +672,7 @@ contract Crowdfunding is
     }
 
     //cancel vote and stay on current treshold
-    function resetVoteSession(uint256 id) private validProjectId(id) {
+    function resetVoteSession(uint256 id) private {
         Project memory project = projects[id];
         Treshold memory currentTreshold = projectsTresholds[id][
             project.currentTreshold
