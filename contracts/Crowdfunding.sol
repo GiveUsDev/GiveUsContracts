@@ -620,7 +620,7 @@ contract Crowdfunding is
     //The whenNotPaused is always Valid but i still put the modifier just in case
     function deliberateVote(
         uint256 id
-    ) private whenNotPaused validProjectId(id) {
+    ) private {
         Project memory project = projects[id];
         Treshold memory currentTreshold = projectsTresholds[id][
             project.currentTreshold
