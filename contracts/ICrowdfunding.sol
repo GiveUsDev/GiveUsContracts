@@ -43,7 +43,7 @@ interface ICrowdfunding {
      * @param owner The owner of said project
      * @param projectName The name of the project
      */
-    event ProjectCreated(uint256 projectID, address owner, string projectName);
+    event ProjectCreated(uint256 indexed projectID, address indexed owner, string projectName);
 
     /**
      * @notice Event emitted whenever a project receives a new donation
@@ -52,9 +52,9 @@ interface ICrowdfunding {
      * @param donationAmount The amount donated in wei
      */
     event DonatedToProject(
-        address donatorAddress,
-        uint256 projectId,
-        uint256 donationAmount
+        address indexed donatorAddress,
+        uint256 indexed projectId,
+        uint256 indexed donationAmount
     );
 
     /**
@@ -64,9 +64,9 @@ interface ICrowdfunding {
      * @param amountToWithdraw The amount withdrawn in wei
      */
     event WithdrewFunds(
-        address projectOwnerAddress,
-        uint256 projectId,
-        address exchangeTokenAddress,
+        address indexed projectOwnerAddress,
+        uint256 indexed projectId,
+        address indexed exchangeTokenAddress,
         uint256 amountToWithdraw
     );
 
@@ -74,34 +74,34 @@ interface ICrowdfunding {
      * @notice Event emitted whenever a project owner withdraws its funds
      * @param tokenAddress The address of the IERC20 contract
      */
-    event NewSupportedTokenAdded(address tokenAddress);
+    event NewSupportedTokenAdded(address indexed tokenAddress);
 
     /**
      * @notice Event emitted whenever an admin changes the Donation Fee
      * @param projectId The project's ID
      * @param newFee The new donationFee amount
      */
-    event DonationFeeUpdated(uint256 projectId, uint16 newFee);
+    event DonationFeeUpdated(uint256 indexed projectId, uint16 indexed newFee);
 
     /**
      * @notice Event emitted whenever a project is deactivated
      * @param projectId The project's ID
      * @param newStatus The new status of the project
      */
-    event ProjectStatusUpdated(uint256 projectId, uint256 newStatus);
+    event ProjectStatusUpdated(uint256 indexed projectId, uint256 indexed newStatus);
 
-    event ProjectVoteCooldownUpdated(uint256 projectId, uint256 newCooldown);
+    event ProjectVoteCooldownUpdated(uint256 indexed projectId, uint256 indexed newCooldown);
 
     event VoteSessionReset(
-        uint256 projectId,
-        uint256 projectThreshold,
-        uint256 currentCooldown
+        uint256 indexed projectId,
+        uint256 indexed projectThreshold,
+        uint256 indexed currentCooldown
     );
 
     event WithdrewFees(
-        address withdrawer,
-        address tokenWithdrawn,
-        uint256 amountWithdrawn
+        address indexed withdrawer,
+        address indexed tokenWithdrawn,
+        uint256 indexed amountWithdrawn
     );
 
     struct Threshold {
