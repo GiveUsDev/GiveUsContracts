@@ -164,18 +164,18 @@ interface ICrowdfunding {
 
     /**
      * @notice Function returning if a user is a donator or not
-     * @param user user address
-     * @param id project id
+     * @param userAddress user address
+     * @param projectId project id
      * @return uint boolean, is user a donator
      */
-    function isDonator(address user, uint256 id) external view returns (uint);
+    function isDonator(address userAddress, uint256 projectId) external view returns (uint);
 
     /**
      * @notice Function that checks if token is supported by the contract as an exchange token
-     * @param token address of the token you want to check
+     * @param tokenAddress address of the token you want to check
      * @return uint boolean, is token supported
      */
-    function isTokenSupported(address token) external view returns (uint);
+    function isTokenSupported(address tokenAddress) external view returns (uint);
 
     /**
      * @notice Function that returns the project data of a given projectId
@@ -234,16 +234,16 @@ interface ICrowdfunding {
 
     /**
      * @notice Function that starts a vote session for a threshold
-     * @param id ID of the project
+     * @param projectId ID of the project
      */
-    function endThresholdVoting(uint256 id) external;
+    function endThresholdVoting(uint256 projectId) external;
 
     /**
      * @notice Function that allows a donator to vote for the current threshold of a project
-     * @param id ID of the project
+     * @param projectId ID of the project
      * @param vote true for positive vote, false for negative vote
      */
-    function voteForThreshold(uint256 id, uint vote) external;
+    function voteForThreshold(uint256 projectId, uint vote) external;
 
     /**
      * @notice Function that allows a project owner to withdraw his funds

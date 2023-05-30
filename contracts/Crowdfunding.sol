@@ -10,9 +10,9 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {ICrowdfunding} from "./ICrowdfunding.sol";
 
 /**
- * @title A Crowdfunding Contract
+ * @title Crowdfunding.sol
  * @author Ludovic Domingues
- * @notice Contract used for GiveUs Plateform
+ * @notice GiveUs Smart contract responsible for the crowdfunding logic
  */
 contract Crowdfunding is
     ICrowdfunding,
@@ -26,23 +26,38 @@ contract Crowdfunding is
     /**
      * @dev The following constants are used by AccessControl to check authorisations.
      */
+    /// @notice The PAUSER_ROLE allows an account to pause/unpause the contract.
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    /// @notice The UPDATER_ROLE allows an account to create/update/delete projects.
     bytes32 public constant UPDATER_ROLE = keccak256("UPDATER_ROLE");
+    /// @notice The WITHDRAWER_ROLE allows an account to withdraw the fees funds from the contract.
     bytes32 public constant WITHDRAWER_ROLE = keccak256("WITHDRAWER_ROLE");
 
+    /// @dev  Counter used for project id
     CountersUpgradeable.Counter private idCounter;
 
-    mapping(address => uint256) private supportedTokens;
-    mapping(uint256 => Project) private projects; //get project by id
+    /// @dev  Mapping used to store if a token is supported (TokenAddress => bool) //TODO: convert to boolean
+    mapping(address => uint256) private supportedTokens; 
+    /// @dev  Mapping used to store the projects and their struct data (ProjectId => Project)
+    mapping(uint256 => Project) private projects;
+    /// @dev  Mapping used to store the project (ProjetId => ThresholdId => Threshold)
+    /// @dev Each threshold has its own budget like [10,20,30] this means the total budget is 10+20+30
     mapping(uint256 => mapping(uint256 => Threshold))
-        private projectsThresholds; //get project by id and threshold by id // each threshold has its own budget like [10,20,30] this means the total budget is 10+20+30 //can add alter a function to add new thresholds
+        private projectsThresholds;
+    /// @dev Mapping used to store the donations Amounts (User Address => ProjectId => DonationAmount)
     mapping(address => mapping(uint256 => uint256)) private userDonations;
-    mapping(address => mapping(uint256 => mapping(uint256 => uint256)))
+    /// @dev Mapping used to store the vote made by address to specific threshold (User Address => ProjectId => ThresholdId => bool)
+    mapping(address => mapping(uint256 => mapping(uint256 => uint256))) //TODO: convert to boolean
         private thresholdVoteFromAddress;
+    /// @dev Mapping used to store all User Addresses that voted for specific threshold (ProjectId => ThresholdId => User Addresses[])
     mapping(uint256 => mapping(uint256 => address[]))
         private voterArrayForThreshold;
+
+    /// @dev Mapping used to store the fees taken and can be withdrawn by address (ERC20 Token Address => Amount)
     mapping(address => uint256) private availableFees;
 
+    /// @dev Modifier used to check if id ProjectId is valid
+    /// @param id ProjectId
     modifier validProjectId(uint256 id) {
         if (idCounter.current() <= id) {
             revert InvalidProjectId();
@@ -50,6 +65,9 @@ contract Crowdfunding is
         _;
     }
 
+    /// @dev Modifier used to check if thresholdId of projectId is valid
+    /// @param projectId ProjectId
+    ///@param thresholdId Threshold Id of given Project Id
     modifier validThresholdId(uint256 projectId, uint256 thresholdId) {
         Project memory project = projects[projectId];
         if (project.nbOfThresholds <= thresholdId) {
@@ -58,6 +76,8 @@ contract Crowdfunding is
         _;
     }
 
+    /// @dev Modifier used to check if exchangeTokenAddress is supported
+    /// @param exchangeTokenAddress Address of the ERC20 Token
     modifier supportedToken(address exchangeTokenAddress) {
         if (isTokenSupported(exchangeTokenAddress) == 0) {
             revert TokenNotSupported();
@@ -66,7 +86,7 @@ contract Crowdfunding is
     }
 
     /**
-     * @notice Initializer used to set the default roles
+     * @notice Initializer used to set the default roles and initialise Access Control and Pausable
      * @dev Grants `DEFAULT_ADMIN_ROLE`, `PAUSER_ROLE`, `UPDATER_ROLE` and `WITHDRAWER_ROLE` to the msg.sender
      */
     function initialize() external initializer {
@@ -82,6 +102,7 @@ contract Crowdfunding is
      * @notice Function used to Create a new Project
      * @param projectData Data used to create project
      * @param thresholds Array of threshold for the project
+     * @dev Can only be called when the contract is not Paused
      */
     function createProject(
         ProjectData calldata projectData,
@@ -151,7 +172,7 @@ contract Crowdfunding is
     /**
      * @notice Function that returns the project data of a given projectId
      * @param projectId ID of the project
-     * @return Project the data for the given project
+     * @return Project The data for the given project
      */
     function getProject(
         uint256 projectId
@@ -188,10 +209,10 @@ contract Crowdfunding is
     }
 
     /**
-     * @notice Function that returns donated amount from a donatorAddress to a project
+     * @notice Function that returns the amount donated from a donatorAddress in a given project
      * @param donatorAddress address of the donator
      * @param projectId ID of the project
-     * @return uint donated amount
+     * @return uint Donated amount
      */
     function getUserDonations(
         address donatorAddress,
@@ -209,10 +230,10 @@ contract Crowdfunding is
 
     /**
      * @notice Function that returns if a donator has voted on a threshold
-     * @param voterAddress address of the donator/voter
+     * @param voterAddress Address of the donator/voter
      * @param projectId ID of the project
      * @param thresholdId ID of the threshold
-     * @return uint boolean, has voted ?
+     * @return uint boolean, Has voted ? //TODO: convert to boolean
      */
     function getThresholdVoteFromAddress(
         address voterAddress,
@@ -230,6 +251,12 @@ contract Crowdfunding is
         return thresholdVoteFromAddress[voterAddress][projectId][thresholdId];
     }
 
+
+    /**
+     * @notice Function that returns the amount of fees available to withdraw for a given ERC20 address
+     * @param tokenAddress Address of the ERC20 token
+     * @return uint Amount of available fees to withdraw
+     */
     function getFeesAvailableToWithdraw(
         address tokenAddress
     ) external view virtual override returns (uint256) {
@@ -237,23 +264,27 @@ contract Crowdfunding is
     }
 
     /**
-     * @notice Triggers stopped state
+     * @notice Triggers Paused state
+     * @dev Can only be called by the PAUSER_ROLE and when not already paused
      */
     function pause() external onlyRole(PAUSER_ROLE) whenNotPaused {
         _pause();
     }
 
     /**
-     * @notice Returns to normal state
+     * @notice Returns to Normal state from Paused State
+     * @dev Can only be called by the PAUSER_ROLE and when the contract is in the Paused State
      */
     function unpause() external onlyRole(PAUSER_ROLE) whenPaused {
         _unpause();
     }
 
     /**
-     * @notice Donate amount of tokens to project id
+     * @notice Donates tokens to a project
+     * @notice The tokens given are the ones used by the project
      * @param projectId ID of the project
-     * @param amount amount to donate
+     * @param amount Amount to donate
+     * @dev Can only be called when the contract is not Paused
      */
     function donateToProject(
         uint256 projectId,
@@ -311,52 +342,55 @@ contract Crowdfunding is
     }
 
     /**
-     * @notice Function that
-     * @param id ID of the project
+     * @notice Function that ends the voting period of a given project
+     * @param projectId ID of the project
+     * @dev Can only be called when the contract is not Paused
+     * @dev Can only be called by an address with the UPDATER_ROLE role
      */
     function endThresholdVoting(
-        uint256 id
+        uint256 projectId
     )
         external
         virtual
         override
         onlyRole(UPDATER_ROLE)
         whenNotPaused
-        validProjectId(id)
+        validProjectId(projectId)
     {
-        Project memory project = projects[id];
-        Threshold memory currentThreshold = projectsThresholds[id][
+        Project memory project = projects[projectId];
+        Threshold memory currentThreshold = projectsThresholds[projectId][
             project.currentThreshold
         ];
         if (currentThreshold.voteSession.isVotingInSession == 0) {
             revert NotInVotingSession();
         }
 
-        projectsThresholds[id][project.currentThreshold]
+        projectsThresholds[projectId][project.currentThreshold]
             .voteSession
             .isVotingInSession = 0;
 
-        deliberateVote(id);
+        deliberateVote(projectId);
     }
 
     /**
-     * @notice Function that allows a donator to vote for the current threshold of a project
-     * @param id ID of the project
-     * @param vote true for positive vote, false for negative vote
+     * @notice Function that allows a donator to vote for the current threshold of a project he donated to
+     * @param projectId ID of the project
+     * @param vote true for positive vote, false for negative vote //TODO: convert to boolean
+     * @dev Can only be called when the contract is not Paused
      */
     function voteForThreshold(
-        uint256 id,
+        uint256 projectId,
         uint256 vote
-    ) external virtual override whenNotPaused validProjectId(id) {
+    ) external virtual override whenNotPaused validProjectId(projectId) {
         if (vote > 1) {
             revert InvalidUintAsBool();
         }
-        if (isDonator(msg.sender, id) == 0) {
+        if (isDonator(msg.sender, projectId) == 0) {
             revert NotADonator();
         }
 
-        Project memory project = projects[id];
-        Threshold memory currentThreshold = projectsThresholds[id][
+        Project memory project = projects[projectId];
+        Threshold memory currentThreshold = projectsThresholds[projectId][
             project.currentThreshold
         ];
 
@@ -365,7 +399,7 @@ contract Crowdfunding is
         }
 
         if (
-            thresholdVoteFromAddress[msg.sender][id][
+            thresholdVoteFromAddress[msg.sender][projectId][
                 project.currentThreshold
             ] == 1
         ) {
@@ -375,13 +409,15 @@ contract Crowdfunding is
         VoteSession memory vs = currentThreshold.voteSession;
         vote == 1 ? vs.positiveVotes++ : vs.negativeVotes++;
 
-        projectsThresholds[id][project.currentThreshold].voteSession = vs;
-        thresholdVoteFromAddress[msg.sender][id][project.currentThreshold] = 1;
-        voterArrayForThreshold[id][project.currentThreshold].push(msg.sender);
+        projectsThresholds[projectId][project.currentThreshold].voteSession = vs;
+        thresholdVoteFromAddress[msg.sender][projectId][project.currentThreshold] = 1;
+        voterArrayForThreshold[projectId][project.currentThreshold].push(msg.sender);
     }
 
     /**
-     * @notice Function that allows a project owner to withdraw his funds
+     * @notice Function that allows a project owner to withdraw the funds unlocked on his project
+     * @dev Can only be called when the contract is not Paused
+     * @param projectId The projet's ID
      */
     function withdrawFunds(
         uint256 projectId
@@ -417,6 +453,12 @@ contract Crowdfunding is
         );
     }
 
+    /**
+     * @notice Function that allows an Admin to withdraw fees from the contract
+     * @dev Can only be called when the contract is not Paused
+     * @dev Can only be called by a user with the WITHDRAWER_ROLE role
+     * @param tokenAddress The adress of the ERC20 token we want to withdraw
+     */
     function withdrawFees(
         address tokenAddress
     ) external virtual override onlyRole(WITHDRAWER_ROLE) whenNotPaused {
@@ -443,6 +485,7 @@ contract Crowdfunding is
     /**
      * @notice Function that adds a new supported token
      * @param tokenAddress Address of the ERC20 token
+     * @dev Can only be called by a user with the UPDATER_ROLE role
      */
     function addNewSupportedToken(
         address tokenAddress
@@ -458,6 +501,7 @@ contract Crowdfunding is
      * @notice Function that sets the donation fee for a project
      * @param projectId ID of the project
      * @param newFee New fee to set
+     * @dev Can only be called by a user with the UPDATER_ROLE role
      */
     function setDonationFee(
         uint256 projectId,
@@ -477,9 +521,10 @@ contract Crowdfunding is
     }
 
     /**
-     * @notice Function that sets the project status
+     * @notice Function that sets the project status of a given project
      * @param projectId ID of the project
      * @param newStatus New status to set
+     * @dev Can only be called by a user with the UPDATER_ROLE role
      */
     function updateProjectStatus(
         uint256 projectId,
@@ -499,6 +544,12 @@ contract Crowdfunding is
         emit ProjectStatusUpdated(projectId, newStatus);
     }
 
+    /**
+     * @notice Function that sets the VoteCooldown of a given project
+     * @param projectId ID of the project
+     * @param newCooldown New cooldown amount to set
+     * @dev Can only be called by a user with the UPDATER_ROLE role
+     */
     function updateProjectVoteCooldown(
         uint256 projectId,
         uint256 newCooldown
@@ -513,6 +564,12 @@ contract Crowdfunding is
         emit ProjectVoteCooldownUpdated(projectId, newCooldown);
     }
 
+    /**
+     * @notice Function used to move funds beetween projects (Only used in case of emergency)
+     * @param fromProjectID ID of the project we withdraw the funds from
+     * @param toProjectID ID of the project we send the funds to
+     * @dev Can only be called by a user with the UPDATER_ROLE role
+     */
     function withdrawFundsToOtherProject(
         uint256 fromProjectID,
         uint256 toProjectID
@@ -565,34 +622,37 @@ contract Crowdfunding is
 
     /**
      * @notice Function returning if a user is a donator or not
-     * @param user user address
-     * @param id project id
-     * @return uint boolean, is user a donator
+     * @param userAddress The User's address
+     * @param projectId The Project's ID
+     * @return uint boolean, is user a donator //TODO: replace with boolean
      */
     function isDonator(
-        address user,
-        uint256 id
-    ) public view virtual override validProjectId(id) returns (uint256) {
-        return userDonations[user][id] != 0 ? 1 : 0;
+        address userAddress,
+        uint256 projectId
+    ) public view virtual override validProjectId(projectId) returns (uint256) {
+        return userDonations[userAddress][projectId] != 0 ? 1 : 0;
     }
 
     /**
-     * @notice Function that checks if token is supported by the contract as an exchange token
-     * @param token address of the token you want to check
-     * @return uint boolean, is token supported
+     * @notice Function that checks if a token is supported by the contract as an exchange token
+     * @param tokenAddress Address of the token you want to check
+     * @return uint boolean, Is token supported //TODO: replace with boolean
      */
-    function isTokenSupported(address token) public view returns (uint256) {
-        if (token == address(0)) {
+    function isTokenSupported(address tokenAddress) public view returns (uint256) {
+        if (tokenAddress == address(0)) {
             return 0;
         }
-        return supportedTokens[token];
+        return supportedTokens[tokenAddress];
     }
 
-    //The ID is always Valid but i still put the modifier just in case
-    //The whenNotPaused is always Valid but i still put the modifier just in case
-    function CheckAndStartThresholdVoting(uint256 id) private {
-        Project memory project = projects[id];
-        Threshold memory currentThreshold = projectsThresholds[id][
+
+    /**
+     * @dev Function that checks if a threshold is reached for a given project and starts a vote if it is
+     * @param projectId The project's ID
+     */
+    function CheckAndStartThresholdVoting(uint256 projectId) private {
+        Project memory project = projects[projectId];
+        Threshold memory currentThreshold = projectsThresholds[projectId][
             project.currentThreshold
         ];
 
@@ -602,17 +662,19 @@ contract Crowdfunding is
             project.currentThreshold < project.nbOfThresholds &&
             project.currentVoteCooldown <= block.timestamp
         ) {
-            projectsThresholds[id][project.currentThreshold]
+            projectsThresholds[projectId][project.currentThreshold]
                 .voteSession
                 .isVotingInSession = 1;
         }
     }
 
-    //The ID is always Valid but i still put the modifier just in case
-    //The whenNotPaused is always Valid but i still put the modifier just in case
-    function deliberateVote(uint256 id) private {
-        Project memory project = projects[id];
-        Threshold memory currentThreshold = projectsThresholds[id][
+    /**
+     * @dev Function used to deliberate of a vote's result
+     * @param projectId The project's ID
+     */
+    function deliberateVote(uint256 projectId) private {
+        Project memory project = projects[projectId];
+        Threshold memory currentThreshold = projectsThresholds[projectId][
             project.currentThreshold
         ];
 
@@ -629,7 +691,7 @@ contract Crowdfunding is
 
         int256 votesPercentage = int256(project.requiredVotePercentage);
 
-        projectsThresholds[id][project.currentThreshold]
+        projectsThresholds[projectId][project.currentThreshold]
             .voteSession
             .isVotingInSession = 0;
 
@@ -641,55 +703,59 @@ contract Crowdfunding is
             project.currentThreshold++;
 
             //updating global variables
-            projects[id] = project;
+            projects[projectId] = project;
 
             if (project.currentThreshold < project.nbOfThresholds) {
-                currentThreshold = projectsThresholds[id][
+                currentThreshold = projectsThresholds[projectId][
                     project.currentThreshold
                 ];
 
                 //check if we have enough funds to start next vote
-                CheckAndStartThresholdVoting(id);
+                CheckAndStartThresholdVoting(projectId);
             }
         } else {
-            resetVoteSession(id);
+            //reset vote session if the result is negative
+            resetVoteSession(projectId);
         }
     }
 
-    //cancel vote and stay on current threshold
-    function resetVoteSession(uint256 id) private {
-        Project memory project = projects[id];
-        Threshold memory currentThreshold = projectsThresholds[id][
+    /**
+     * @dev Function used to reset a vote session and put it on cooldown
+     * @param projectId The project's ID
+     */
+    function resetVoteSession(uint256 projectId) private {
+        Project memory project = projects[projectId];
+        Threshold memory currentThreshold = projectsThresholds[projectId][
             project.currentThreshold
         ];
 
         currentThreshold.voteSession.positiveVotes = 0;
         currentThreshold.voteSession.negativeVotes = 0;
         currentThreshold.voteSession.isVotingInSession = 0;
-        projectsThresholds[id][project.currentThreshold] = currentThreshold;
+        projectsThresholds[projectId][project.currentThreshold] = currentThreshold;
 
         address[] memory tempVoterArrayForThreshold = voterArrayForThreshold[
-            id
+            projectId
         ][project.currentThreshold];
-        uint256 length = voterArrayForThreshold[id][project.currentThreshold]
+        uint256 length = voterArrayForThreshold[projectId][project.currentThreshold]
             .length;
         address voter;
 
         for (uint256 i; i < length; ) {
             voter = tempVoterArrayForThreshold[i];
-            thresholdVoteFromAddress[voter][id][project.currentThreshold] = 0;
+            thresholdVoteFromAddress[voter][projectId][project.currentThreshold] = 0;
             unchecked {
                 ++i;
             }
         }
 
-        delete voterArrayForThreshold[id][project.currentThreshold];
+        delete voterArrayForThreshold[projectId][project.currentThreshold];
 
         uint256 newCooldown = block.timestamp + project.voteCooldown;
 
-        projects[id].currentVoteCooldown = newCooldown;
+        projects[projectId].currentVoteCooldown = newCooldown;
 
-        emit VoteSessionReset(id, project.currentThreshold, newCooldown);
+        emit VoteSessionReset(projectId, project.currentThreshold, newCooldown);
     }
 
     /**
