@@ -29,7 +29,6 @@ interface ICrowdfunding {
     error ThresholdNotReached();
     error NoMoreThresholds();
     error CantDeliberateWithoutVotes();
-    error InvalidUintAsBool();
     error NotProjectOwner();
     error DifferentExchangeToken();
     error CantWithdrawToSameProject();
@@ -88,7 +87,7 @@ interface ICrowdfunding {
      * @param projectId The project's ID
      * @param newStatus The new status of the project
      */
-    event ProjectStatusUpdated(uint256 indexed projectId, uint256 indexed newStatus);
+    event ProjectStatusUpdated(uint256 indexed projectId, bool indexed newStatus);
 
     event ProjectVoteCooldownUpdated(uint256 indexed projectId, uint256 indexed newCooldown);
 
@@ -110,7 +109,7 @@ interface ICrowdfunding {
     }
 
     struct VoteSession {
-        uint256 isVotingInSession;
+        bool isVotingInSession;
         uint256 positiveVotes;
         uint256 negativeVotes;
     }
@@ -134,7 +133,7 @@ interface ICrowdfunding {
      * @notice Struct used to create a new project
      */
     struct Project {
-        uint256 isActive;
+        bool isActive;
         address owner;
         address exchangeTokenAddress;
         string name;
@@ -168,14 +167,14 @@ interface ICrowdfunding {
      * @param projectId project id
      * @return uint boolean, is user a donator
      */
-    function isDonator(address userAddress, uint256 projectId) external view returns (uint);
+    function isDonator(address userAddress, uint256 projectId) external view returns (bool);
 
     /**
      * @notice Function that checks if token is supported by the contract as an exchange token
      * @param tokenAddress address of the token you want to check
      * @return uint boolean, is token supported
      */
-    function isTokenSupported(address tokenAddress) external view returns (uint);
+    function isTokenSupported(address tokenAddress) external view returns (bool);
 
     /**
      * @notice Function that returns the project data of a given projectId
@@ -219,7 +218,7 @@ interface ICrowdfunding {
         address voterAddress,
         uint256 projectId,
         uint256 thresholdId
-    ) external view returns (uint);
+    ) external view returns (bool);
 
     function getFeesAvailableToWithdraw(
         address tokenAddress
@@ -243,7 +242,7 @@ interface ICrowdfunding {
      * @param projectId ID of the project
      * @param vote true for positive vote, false for negative vote
      */
-    function voteForThreshold(uint256 projectId, uint vote) external;
+    function voteForThreshold(uint256 projectId, bool vote) external;
 
     /**
      * @notice Function that allows a project owner to withdraw his funds
@@ -268,7 +267,7 @@ interface ICrowdfunding {
      * @param projectId ID of the project
      * @param newStatus New status to set
      */
-    function updateProjectStatus(uint256 projectId, uint newStatus) external;
+    function updateProjectStatus(uint256 projectId, bool newStatus) external;
 
     function updateProjectVoteCooldown(
         uint256 projectId,

@@ -7,7 +7,7 @@ import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/acce
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {CountersUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {ICrowdfunding} from "./ICrowdfunding.sol";
+import {ICrowdfunding} from "./ICrowdfunding.sol"; 
 
 /**
  * @title Crowdfunding.sol
@@ -36,8 +36,8 @@ contract Crowdfunding is
     /// @dev  Counter used for project id
     CountersUpgradeable.Counter private idCounter;
 
-    /// @dev  Mapping used to store if a token is supported (TokenAddress => bool) //TODO: convert to boolean
-    mapping(address => uint256) private supportedTokens; 
+    /// @dev  Mapping used to store if a token is supported (TokenAddress => bool)
+    mapping(address => bool) private supportedTokens; 
     /// @dev  Mapping used to store the projects and their struct data (ProjectId => Project)
     mapping(uint256 => Project) private projects;
     /// @dev  Mapping used to store the project (ProjetId => ThresholdId => Threshold)
@@ -47,7 +47,7 @@ contract Crowdfunding is
     /// @dev Mapping used to store the donations Amounts (User Address => ProjectId => DonationAmount)
     mapping(address => mapping(uint256 => uint256)) private userDonations;
     /// @dev Mapping used to store the vote made by address to specific threshold (User Address => ProjectId => ThresholdId => bool)
-    mapping(address => mapping(uint256 => mapping(uint256 => uint256))) //TODO: convert to boolean
+    mapping(address => mapping(uint256 => mapping(uint256 => bool)))
         private thresholdVoteFromAddress;
     /// @dev Mapping used to store all User Addresses that voted for specific threshold (ProjectId => ThresholdId => User Addresses[])
     mapping(uint256 => mapping(uint256 => address[]))
@@ -79,7 +79,7 @@ contract Crowdfunding is
     /// @dev Modifier used to check if exchangeTokenAddress is supported
     /// @param exchangeTokenAddress Address of the ERC20 Token
     modifier supportedToken(address exchangeTokenAddress) {
-        if (isTokenSupported(exchangeTokenAddress) == 0) {
+        if (!isTokenSupported(exchangeTokenAddress)) {
             revert TokenNotSupported();
         }
         _;
@@ -139,7 +139,7 @@ contract Crowdfunding is
 
         uint256 currentId = idCounter.current();
         projects[currentId] = Project(
-            1,
+            true,
             projectData.owner,
             projectData.exchangeTokenAddress,
             projectData.name,
@@ -233,7 +233,7 @@ contract Crowdfunding is
      * @param voterAddress Address of the donator/voter
      * @param projectId ID of the project
      * @param thresholdId ID of the threshold
-     * @return uint boolean, Has voted ? //TODO: convert to boolean
+     * @return boolean, Has voted ?
      */
     function getThresholdVoteFromAddress(
         address voterAddress,
@@ -246,7 +246,7 @@ contract Crowdfunding is
         override
         validProjectId(projectId)
         validThresholdId(projectId, thresholdId)
-        returns (uint256)
+        returns (bool)
     {
         return thresholdVoteFromAddress[voterAddress][projectId][thresholdId];
     }
@@ -295,7 +295,7 @@ contract Crowdfunding is
         }
         Project memory project = projects[projectId];
 
-        if (project.isActive == 0) {
+        if (!project.isActive) {
             revert ProjectNotActive();
         }
 
@@ -324,11 +324,6 @@ contract Crowdfunding is
         projects[projectId].currentAmount =
             projects[projectId].currentAmount +
             donationAmount;
-
-        project = projects[projectId];
-        Threshold memory currentThreshold = projectsThresholds[projectId][
-            project.currentThreshold
-        ];
 
         CheckAndStartThresholdVoting(projectId);
 
@@ -361,13 +356,13 @@ contract Crowdfunding is
         Threshold memory currentThreshold = projectsThresholds[projectId][
             project.currentThreshold
         ];
-        if (currentThreshold.voteSession.isVotingInSession == 0) {
+        if (!currentThreshold.voteSession.isVotingInSession) {
             revert NotInVotingSession();
         }
 
         projectsThresholds[projectId][project.currentThreshold]
             .voteSession
-            .isVotingInSession = 0;
+            .isVotingInSession = false;
 
         deliberateVote(projectId);
     }
@@ -375,17 +370,14 @@ contract Crowdfunding is
     /**
      * @notice Function that allows a donator to vote for the current threshold of a project he donated to
      * @param projectId ID of the project
-     * @param vote true for positive vote, false for negative vote //TODO: convert to boolean
+     * @param vote true for positive vote, false for negative vote
      * @dev Can only be called when the contract is not Paused
      */
     function voteForThreshold(
         uint256 projectId,
-        uint256 vote
+        bool vote
     ) external virtual override whenNotPaused validProjectId(projectId) {
-        if (vote > 1) {
-            revert InvalidUintAsBool();
-        }
-        if (isDonator(msg.sender, projectId) == 0) {
+        if (!isDonator(msg.sender, projectId)) {
             revert NotADonator();
         }
 
@@ -394,23 +386,23 @@ contract Crowdfunding is
             project.currentThreshold
         ];
 
-        if (currentThreshold.voteSession.isVotingInSession == 0) {
+        if (!currentThreshold.voteSession.isVotingInSession) {
             revert NotInVotingSession();
         }
 
         if (
             thresholdVoteFromAddress[msg.sender][projectId][
                 project.currentThreshold
-            ] == 1
+            ]
         ) {
             revert CanOnlyVoteOnce();
         }
 
         VoteSession memory vs = currentThreshold.voteSession;
-        vote == 1 ? vs.positiveVotes++ : vs.negativeVotes++;
+        vote == true ? vs.positiveVotes++ : vs.negativeVotes++;
 
         projectsThresholds[projectId][project.currentThreshold].voteSession = vs;
-        thresholdVoteFromAddress[msg.sender][projectId][project.currentThreshold] = 1;
+        thresholdVoteFromAddress[msg.sender][projectId][project.currentThreshold] = true;
         voterArrayForThreshold[projectId][project.currentThreshold].push(msg.sender);
     }
 
@@ -493,7 +485,7 @@ contract Crowdfunding is
         if (tokenAddress == address(0)) {
             revert ZeroAddress();
         }
-        supportedTokens[tokenAddress] = 1;
+        supportedTokens[tokenAddress] = true;
         emit NewSupportedTokenAdded(tokenAddress);
     }
 
@@ -528,7 +520,7 @@ contract Crowdfunding is
      */
     function updateProjectStatus(
         uint256 projectId,
-        uint256 newStatus
+        bool newStatus
     )
         external
         virtual
@@ -536,10 +528,6 @@ contract Crowdfunding is
         onlyRole(UPDATER_ROLE)
         validProjectId(projectId)
     {
-        if (newStatus > 1) {
-            revert InvalidUintAsBool();
-        }
-
         projects[projectId].isActive = newStatus;
         emit ProjectStatusUpdated(projectId, newStatus);
     }
@@ -588,7 +576,7 @@ contract Crowdfunding is
         Project memory fromProject = projects[fromProjectID];
         Project memory toProject = projects[toProjectID];
 
-        if (toProject.isActive == 0) {
+        if (!toProject.isActive) {
             revert ProjectNotActive();
         }
 
@@ -608,8 +596,8 @@ contract Crowdfunding is
         //If the project is still active we deactivate it
         //This function is only used in a case of emergency
         //so logically we should deactivate the project
-        if (fromProject.isActive == 1) {
-            fromProject.isActive = 0;
+        if (fromProject.isActive) {
+            fromProject.isActive = false;
         }
 
         fromProject.currentAmount = fromProject.currentAmount - availableFunds;
@@ -624,23 +612,23 @@ contract Crowdfunding is
      * @notice Function returning if a user is a donator or not
      * @param userAddress The User's address
      * @param projectId The Project's ID
-     * @return uint boolean, is user a donator //TODO: replace with boolean
+     * @return boolean, is user a donator
      */
     function isDonator(
         address userAddress,
         uint256 projectId
-    ) public view virtual override validProjectId(projectId) returns (uint256) {
-        return userDonations[userAddress][projectId] != 0 ? 1 : 0;
+    ) public view virtual override validProjectId(projectId) returns (bool) {
+        return userDonations[userAddress][projectId] != 0 ? true : false;
     }
 
     /**
      * @notice Function that checks if a token is supported by the contract as an exchange token
      * @param tokenAddress Address of the token you want to check
-     * @return uint boolean, Is token supported //TODO: replace with boolean
+     * @return boolean, Is token supported
      */
-    function isTokenSupported(address tokenAddress) public view returns (uint256) {
+    function isTokenSupported(address tokenAddress) public view returns (bool) {
         if (tokenAddress == address(0)) {
-            return 0;
+            return false;
         }
         return supportedTokens[tokenAddress];
     }
@@ -658,13 +646,13 @@ contract Crowdfunding is
 
         if (
             project.currentAmount >= currentThreshold.budget &&
-            currentThreshold.voteSession.isVotingInSession == 0 &&
+            !currentThreshold.voteSession.isVotingInSession &&
             project.currentThreshold < project.nbOfThresholds &&
             project.currentVoteCooldown <= block.timestamp
         ) {
             projectsThresholds[projectId][project.currentThreshold]
                 .voteSession
-                .isVotingInSession = 1;
+                .isVotingInSession = true;
         }
     }
 
@@ -693,7 +681,7 @@ contract Crowdfunding is
 
         projectsThresholds[projectId][project.currentThreshold]
             .voteSession
-            .isVotingInSession = 0;
+            .isVotingInSession = false;
 
         if (
             (positiveVotes * 10000) / (positiveVotes + negativeVotes) >
@@ -731,7 +719,7 @@ contract Crowdfunding is
 
         currentThreshold.voteSession.positiveVotes = 0;
         currentThreshold.voteSession.negativeVotes = 0;
-        currentThreshold.voteSession.isVotingInSession = 0;
+        currentThreshold.voteSession.isVotingInSession = false;
         projectsThresholds[projectId][project.currentThreshold] = currentThreshold;
 
         address[] memory tempVoterArrayForThreshold = voterArrayForThreshold[
@@ -743,7 +731,7 @@ contract Crowdfunding is
 
         for (uint256 i; i < length; ) {
             voter = tempVoterArrayForThreshold[i];
-            thresholdVoteFromAddress[voter][projectId][project.currentThreshold] = 0;
+            thresholdVoteFromAddress[voter][projectId][project.currentThreshold] = false;
             unchecked {
                 ++i;
             }
