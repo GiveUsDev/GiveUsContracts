@@ -39,7 +39,11 @@ interface ICrowdfunding {
      * @param owner The owner of said project
      * @param projectName The name of the project
      */
-    event ProjectCreated(uint256 indexed projectID, address indexed owner, string projectName);
+    event ProjectCreated(
+        uint256 indexed projectID,
+        address indexed owner,
+        string projectName
+    );
 
     /**
      * @notice Event emitted whenever a project receives a new donation
@@ -85,14 +89,20 @@ interface ICrowdfunding {
      * @param projectId The project's ID
      * @param newStatus The new status of the project
      */
-    event ProjectStatusUpdated(uint256 indexed projectId, bool indexed newStatus);
+    event ProjectStatusUpdated(
+        uint256 indexed projectId,
+        bool indexed newStatus
+    );
 
     /**
      * @notice Event emitted whenever a project's vote cooldown is updated
      * @param projectId The project's ID
      * @param newCooldown The new cooldown for the project
      */
-    event ProjectVoteCooldownUpdated(uint256 indexed projectId, uint256 indexed newCooldown);
+    event ProjectVoteCooldownUpdated(
+        uint256 indexed projectId,
+        uint256 indexed newCooldown
+    );
 
     /**
      * @notice Event emitted whenever a project's current vote session is reset because the result was negative
@@ -219,14 +229,19 @@ interface ICrowdfunding {
      * @param projectId The Project's ID
      * @return boolean, is user a donator
      */
-    function isDonator(address userAddress, uint256 projectId) external view returns (bool);
+    function isDonator(
+        address userAddress,
+        uint256 projectId
+    ) external view returns (bool);
 
     /**
      * @notice Function that checks if a token is supported by the contract as an exchange token
      * @param tokenAddress Address of the token you want to check
      * @return boolean, Is token supported
      */
-    function isTokenSupported(address tokenAddress) external view returns (bool);
+    function isTokenSupported(
+        address tokenAddress
+    ) external view returns (bool);
 
     /**
      * @notice Function that returns the project data of a given projectId
