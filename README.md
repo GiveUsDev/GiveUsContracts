@@ -71,3 +71,16 @@ Project owners can withdraw funds if they have available funds to withdraw. The 
 The contract also uses OpenZeppelin's upgradeability features to ensure that future updates can be made without compromising the storage layout.
 
 The Admins (UPDATER_ROLE) can withdraw the fees collected by the contract.
+
+### Security and Emergency procedures
+
+To avoid any issues regarding the stealing of private keys or risk of scam from team members, the UPDATER_ROLE, which has the most power, will only be given to a multisig wallet which will require at least 3 team members to sign to make any transactions.
+
+In regards to the security of the contract, the team is able to pause the contract and updgrade it to fix any bug encountered.
+
+In case of emergency the team can use the UPDATER_ROLE to transfer the funds from one project to another.
+
+Such cases of emergency can be but are not limited to : 
+- A project owner that was supposedly honest at first, decides to take the first installement of the donor's donations and not continue to work on the project. 
+
+In that case, the team will freeze the project in question, and the remaining donations on it will be redistributed to another project (project that can be decided by the community).
