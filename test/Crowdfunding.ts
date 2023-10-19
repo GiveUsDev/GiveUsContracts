@@ -1,5 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
+import { BigNumber } from "ethers";
 import { ethers, upgrades }  from "hardhat";
 const { BN, expectRevert } = require('@openzeppelin/test-helpers');
 
@@ -379,7 +380,6 @@ describe("Crowdfunding Contract", function () {
         expect(await usdc.balanceOf(owner.address)).to.be.equal(amount);
       });
     });
-
     describe("Initializer()", function () {
       it("Should grant role DEFAULT_ADMIN_ROLE", async function () {
         const { crowdfunding, owner, addr1, addr2 } = await loadFixture(deployCrowdfundingFixture);
@@ -399,7 +399,6 @@ describe("Crowdfunding Contract", function () {
         expect(await crowdfunding.hasRole(UPDATER_ROLE, owner.address, { from: owner.address })).to.equal(true);
       });
     });
-
     describe("pause()", function () {
       it("should not pause, revert : Access Control", async () => {
         const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
@@ -424,7 +423,6 @@ describe("Crowdfunding Contract", function () {
         expect(await crowdfunding.connect(owner).paused()).to.be.equal(true);
       });
     });
-
     describe("unpause()", function () {
       it("should not unpause, revert : Access Control", async () => {
         const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
@@ -451,7 +449,6 @@ describe("Crowdfunding Contract", function () {
       });
 
     });
-
     describe("createProject(Project calldata _project)", function () {
       it("Should not create project, revert : Missing Role", async function () {
         const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
@@ -595,7 +592,6 @@ describe("Crowdfunding Contract", function () {
         expect(token).to.be.equal(true);
       });
     });
-
     describe("withdrawFees(address tokenAddress)", function () {
       it("Should not withdrawFees, revert : AccessControl is missing role", async function () {
         const { crowdfunding, owner, addr1, addr2 } = await loadFixture(createProjectAndFundFixture);
@@ -649,7 +645,6 @@ describe("Crowdfunding Contract", function () {
           .withArgs(owner.address, usdc.address, availableFees);
       });
     });
-
     describe("donateToProject(uint id, uint amount)", function () {
       it("Shouldnt donate, revert : Paused", async function () {
         const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
@@ -720,6 +715,32 @@ describe("Crowdfunding Contract", function () {
 
         expect(await crowdfunding.donateToProject(projectID, donationAmount))
           .to.emit(crowdfunding, 'DonatedToProject').withArgs(owner.address, projectID, donationAmount);
+      });
+
+      it("Should donate even if goal is reached and make is available to withdraw", async function () {
+        const { crowdfunding, owner, usdc, mintAmount, donatedAmount, projectID, projectData } = await loadFixture(createProjectAndFundFixture);
+        const donationAmount = 100000;
+        const donatedAmountMinusFee = BigNumber.from(donationAmount - (donationAmount * projectData.donationFee / 10000));
+
+        expect(donatedAmountMinusFee).to.be.equal(90000);
+        await usdc.mint(donationAmount);
+        await usdc.approve(crowdfunding.address, donationAmount);
+
+        const currentProject = await crowdfunding.getProject(projectID);
+        const currentAmount = currentProject.currentAmount;
+        const availableToWithdraw = currentProject.availableToWithdraw;
+
+        expect(await crowdfunding.donateToProject(projectID, donationAmount))
+          .to.emit(crowdfunding, 'DonatedToProject').withArgs(owner.address, projectID, donationAmount);
+
+        const projectDataFromBC = await crowdfunding.getProject(projectID);
+
+        const expectedAmount = currentAmount.add(donatedAmountMinusFee);
+
+        const expectedAvailableToWithdraw = availableToWithdraw.add(donatedAmountMinusFee);
+
+        expect(projectDataFromBC.currentAmount).to.be.equal(expectedAmount);
+        expect(projectDataFromBC.availableToWithdraw).to.be.equal(expectedAvailableToWithdraw);
       });
     });
     describe("isDonator(address user, uint256 id)", function () {
@@ -1082,8 +1103,6 @@ describe("Crowdfunding Contract", function () {
       expect(donationAmount).to.be.equal(donatedAmount);
     });
     });
-
-
     describe("withdrawFundsToOtherProject(uint256 fromProjectID, uint256 toProjectID)", function () {
       it("Shouldnt withdrawFundsToOtherProject, revert : Invalid Project Id from", async function () {
         const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndDonateFixture);

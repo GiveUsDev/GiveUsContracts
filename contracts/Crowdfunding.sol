@@ -428,6 +428,11 @@ contract Crowdfunding is
 
         CheckAndStartThresholdVoting(projectId);
 
+        if(project.currentThreshold == project.nbOfThresholds)
+        {
+            projects[projectId].availableToWithdraw += donationAmount;
+        }
+
         IERC20Upgradeable(tokenSupported).safeTransferFrom(
             msg.sender,
             address(this),
