@@ -1,5 +1,4 @@
 # Crowdfunding contract
-
 ## Installation:
 - Clone gitHub repository
 - Install dependencies
@@ -64,6 +63,7 @@ Users can donate to projects using the project's supported token. The smart cont
 
 ### Voting Sessions and Tresholds:
 When a project reaches a milestone's budget, a voting session is started for that milestone. Donators can vote in the session, and their votes are recorded. Once the voting session is over, the votes are deliberated, and if the required vote percentage is met, funds are released to be withdrawn by the project owner. If the vote fails, the vote session is reset, and a new voting session can start after the cooldown period.
+
 
 ### Fund Withdrawals and Transfers:
 Project owners can withdraw funds if they have available funds to withdraw. The contract checks if the project owner's address matches the project's owner address and if there are available funds. Additionally, funds can be transferred from one project to another by an authorized role (UPDATER_ROLE). This is intended for emergency situations and deactivates the source project after the transfer.
