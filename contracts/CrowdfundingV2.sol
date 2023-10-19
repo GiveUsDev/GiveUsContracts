@@ -7,14 +7,14 @@ import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/acce
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {CountersUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {ICrowdfunding} from "./ICrowdfunding.sol";
+import {ICrowdfunding} from "./ICrowdfunding.sol"; 
 
 /**
  * @title Crowdfunding.sol
  * @author Ludovic Domingues
  * @notice GiveUs Smart contract responsible for the crowdfunding logic
  */
-contract Crowdfunding is
+contract CrowdfundingV2 is
     ICrowdfunding,
     Initializable,
     AccessControlUpgradeable,
@@ -37,7 +37,7 @@ contract Crowdfunding is
     CountersUpgradeable.Counter private idCounter;
 
     /// @dev  Mapping used to store if a token is supported (TokenAddress => bool)
-    mapping(address => bool) private supportedTokens;
+    mapping(address => bool) private supportedTokens; 
     /// @dev  Mapping used to store the projects and their struct data (ProjectId => Project)
     mapping(uint256 => Project) private projects;
     /// @dev  Mapping used to store the project (ProjetId => ThresholdId => Threshold)
@@ -99,27 +99,10 @@ contract Crowdfunding is
     }
 
     /**
-     * @notice Triggers Paused state
-     * @dev Can only be called by the PAUSER_ROLE and when not already paused
-     */
-    function pause() external onlyRole(PAUSER_ROLE) whenNotPaused {
-        _pause();
-    }
-
-    /**
-     * @notice Returns to Normal state from Paused State
-     * @dev Can only be called by the PAUSER_ROLE and when the contract is in the Paused State
-     */
-    function unpause() external onlyRole(PAUSER_ROLE) whenPaused {
-        _unpause();
-    }
-
-    /**
      * @notice Function used to Create a new Project
      * @param projectData Data used to create project
      * @param thresholds Array of threshold for the project
      * @dev Can only be called when the contract is not Paused
-     * @dev Can only be called by a user with the UPDATER_ROLE role
      */
     function createProject(
         ProjectData calldata projectData,
@@ -187,6 +170,173 @@ contract Crowdfunding is
     }
 
     /**
+     * @notice Function that returns the project data of a given projectId
+     * @param projectId ID of the project
+     * @return Project The data for the given project
+     */
+    function getProject(
+        uint256 projectId
+    )
+        external
+        view
+        virtual
+        override
+        validProjectId(projectId)
+        returns (Project memory)
+    {
+        return projects[projectId];
+    }
+
+    /**
+     * @notice Function that returns the project threshold of a given projectId and thresholdId
+     * @param projectId ID of the project
+     * @param thresholdId ID of the threshold
+     * @return Threshold the threshold for the given projectId && thresholdId
+     */
+    function getProjectThresholds(
+        uint256 projectId,
+        uint256 thresholdId
+    )
+        external
+        view
+        virtual
+        override
+        validProjectId(projectId)
+        validThresholdId(projectId, thresholdId)
+        returns (Threshold memory)
+    {
+        return projectsThresholds[projectId][thresholdId];
+    }
+
+    /**
+     * @notice Function that returns the amount donated from a donatorAddress in a given project
+     * @param donatorAddress address of the donator
+     * @param projectId ID of the project
+     * @return uint Donated amount
+     */
+    function getUserDonations(
+        address donatorAddress,
+        uint256 projectId
+    )
+        external
+        view
+        virtual
+        override
+        validProjectId(projectId)
+        returns (uint256)
+    {
+        return userDonations[donatorAddress][projectId];
+    }
+
+    /**
+     * @notice Function that returns if a donator has voted on a threshold
+     * @param voterAddress Address of the donator/voter
+     * @param projectId ID of the project
+     * @param thresholdId ID of the threshold
+     * @return boolean, Has voted ?
+     */
+    function getThresholdVoteFromAddress(
+        address voterAddress,
+        uint256 projectId,
+        uint256 thresholdId
+    )
+        external
+        view
+        virtual
+        override
+        validProjectId(projectId)
+        validThresholdId(projectId, thresholdId)
+        returns (bool)
+    {
+        return thresholdVoteFromAddress[voterAddress][projectId][thresholdId];
+    }
+
+
+    /**
+     * @notice Function that returns the amount of fees available to withdraw for a given ERC20 address
+     * @param tokenAddress Address of the ERC20 token
+     * @return uint Amount of available fees to withdraw
+     */
+    function getFeesAvailableToWithdraw(
+        address tokenAddress
+    ) external view virtual override returns (uint256) {
+        return availableFees[tokenAddress];
+    }
+
+    /**
+     * @notice Triggers Paused state
+     * @dev Can only be called by the PAUSER_ROLE and when not already paused
+     */
+    function pause() external onlyRole(PAUSER_ROLE) whenNotPaused {
+        _pause();
+    }
+
+    /**
+     * @notice Returns to Normal state from Paused State
+     * @dev Can only be called by the PAUSER_ROLE and when the contract is in the Paused State
+     */
+    function unpause() external onlyRole(PAUSER_ROLE) whenPaused {
+        _unpause();
+    }
+
+    /**
+     * @notice Donates tokens to a project
+     * @notice The tokens given are the ones used by the project
+     * @param projectId ID of the project
+     * @param amount Amount to donate
+     * @dev Can only be called when the contract is not Paused
+     */
+    function donateToProject(
+        uint256 projectId,
+        uint256 amount
+    ) external virtual override whenNotPaused validProjectId(projectId) {
+        if (amount == 0) {
+            revert ZeroAmount();
+        }
+        Project memory project = projects[projectId];
+
+        if (!project.isActive) {
+            revert ProjectNotActive();
+        }
+
+        if ((amount / 10000) * 10000 != amount) {
+            revert AmountTooSmall();
+        }
+
+        address tokenSupported = project.exchangeTokenAddress;
+
+        if (
+            IERC20Upgradeable(tokenSupported).allowance(
+                msg.sender,
+                address(this)
+            ) < amount
+        ) {
+            revert AllowanceNotApproved();
+        }
+
+        uint256 transactionFee = (amount * project.donationFee) / 10000;
+        availableFees[tokenSupported] += transactionFee;
+
+        uint256 donationAmount = amount - transactionFee;
+
+        //Somehow the second one is more gas efficient written this way but not the first one
+        userDonations[msg.sender][projectId] += donationAmount;
+        projects[projectId].currentAmount =
+            projects[projectId].currentAmount +
+            donationAmount;
+
+        CheckAndStartThresholdVoting(projectId);
+
+        IERC20Upgradeable(tokenSupported).safeTransferFrom(
+            msg.sender,
+            address(this),
+            amount
+        );
+
+        emit DonatedToProject(msg.sender, projectId, donationAmount);
+    }
+
+    /**
      * @notice Function that ends the voting period of a given project
      * @param projectId ID of the project
      * @dev Can only be called when the contract is not Paused
@@ -218,6 +368,84 @@ contract Crowdfunding is
     }
 
     /**
+     * @notice Function that allows a donator to vote for the current threshold of a project he donated to
+     * @param projectId ID of the project
+     * @param vote true for positive vote, false for negative vote
+     * @dev Can only be called when the contract is not Paused
+     */
+    function voteForThreshold(
+        uint256 projectId,
+        bool vote
+    ) external virtual override whenNotPaused validProjectId(projectId) {
+        if (!isDonator(msg.sender, projectId)) {
+            revert NotADonator();
+        }
+
+        Project memory project = projects[projectId];
+        Threshold memory currentThreshold = projectsThresholds[projectId][
+            project.currentThreshold
+        ];
+
+        if (!currentThreshold.voteSession.isVotingInSession) {
+            revert NotInVotingSession();
+        }
+
+        if (
+            thresholdVoteFromAddress[msg.sender][projectId][
+                project.currentThreshold
+            ]
+        ) {
+            revert CanOnlyVoteOnce();
+        }
+
+        VoteSession memory vs = currentThreshold.voteSession;
+        vote == true ? vs.positiveVotes++ : vs.negativeVotes++;
+
+        projectsThresholds[projectId][project.currentThreshold].voteSession = vs;
+        thresholdVoteFromAddress[msg.sender][projectId][project.currentThreshold] = true;
+        voterArrayForThreshold[projectId][project.currentThreshold].push(msg.sender);
+    }
+
+    /**
+     * @notice Function that allows a project owner to withdraw the funds unlocked on his project
+     * @dev Can only be called when the contract is not Paused
+     * @param projectId The projet's ID
+     */
+    function withdrawFunds(
+        uint256 projectId
+    ) external virtual override whenNotPaused validProjectId(projectId) {
+        Project memory project = projects[projectId];
+        if (project.owner != msg.sender) {
+            revert NotProjectOwner();
+        }
+
+        uint256 amountToWithdraw = project.availableToWithdraw;
+
+        if (amountToWithdraw == 0) {
+            revert NoFundsToWithdraw();
+        }
+
+        address exchangeTokenAddress = project.exchangeTokenAddress;
+
+        project.availableToWithdraw = 0;
+        project.amountWithdrawn += amountToWithdraw;
+
+        projects[projectId] = project;
+
+        IERC20Upgradeable(exchangeTokenAddress).safeTransfer(
+            msg.sender,
+            amountToWithdraw
+        );
+
+        emit WithdrewFunds(
+            msg.sender,
+            projectId,
+            exchangeTokenAddress,
+            amountToWithdraw
+        );
+    }
+
+    /**
      * @notice Function that allows an Admin to withdraw fees from the contract
      * @dev Can only be called when the contract is not Paused
      * @dev Can only be called by a user with the WITHDRAWER_ROLE role
@@ -226,12 +454,12 @@ contract Crowdfunding is
     function withdrawFees(
         address tokenAddress
     ) external virtual override onlyRole(WITHDRAWER_ROLE) whenNotPaused {
-        if (tokenAddress == address(0)) {
+        if(tokenAddress == address(0)){
             revert ZeroAddress();
         }
 
         uint256 amountToWithdraw = availableFees[tokenAddress];
-
+        
         if (amountToWithdraw == 0) {
             revert NoFeesToWithdraw();
         }
@@ -381,239 +609,6 @@ contract Crowdfunding is
     }
 
     /**
-     * @notice Donates tokens to a project
-     * @notice The tokens given are the ones used by the project
-     * @param projectId ID of the project
-     * @param amount Amount to donate
-     * @dev Can only be called when the contract is not Paused
-     */
-    function donateToProject(
-        uint256 projectId,
-        uint256 amount
-    ) external virtual override whenNotPaused validProjectId(projectId) {
-        if (amount == 0) {
-            revert ZeroAmount();
-        }
-        Project memory project = projects[projectId];
-
-        if (!project.isActive) {
-            revert ProjectNotActive();
-        }
-
-        if ((amount / 10000) * 10000 != amount) {
-            revert AmountTooSmall();
-        }
-
-        address tokenSupported = project.exchangeTokenAddress;
-
-        if (
-            IERC20Upgradeable(tokenSupported).allowance(
-                msg.sender,
-                address(this)
-            ) < amount
-        ) {
-            revert AllowanceNotApproved();
-        }
-
-        uint256 transactionFee = (amount * project.donationFee) / 10000;
-        availableFees[tokenSupported] += transactionFee;
-
-        uint256 donationAmount = amount - transactionFee;
-
-        //Somehow the second one is more gas efficient written this way but not the first one
-        userDonations[msg.sender][projectId] += donationAmount;
-        projects[projectId].currentAmount =
-            projects[projectId].currentAmount +
-            donationAmount;
-
-        CheckAndStartThresholdVoting(projectId);
-
-        IERC20Upgradeable(tokenSupported).safeTransferFrom(
-            msg.sender,
-            address(this),
-            amount
-        );
-
-        emit DonatedToProject(msg.sender, projectId, donationAmount);
-    }
-
-    /**
-     * @notice Function that allows a donator to vote for the current threshold of a project he donated to
-     * @param projectId ID of the project
-     * @param vote true for positive vote, false for negative vote
-     * @dev Can only be called when the contract is not Paused
-     */
-    function voteForThreshold(
-        uint256 projectId,
-        bool vote
-    ) external virtual override whenNotPaused validProjectId(projectId) {
-        if (!isDonator(msg.sender, projectId)) {
-            revert NotADonator();
-        }
-
-        Project memory project = projects[projectId];
-        Threshold memory currentThreshold = projectsThresholds[projectId][
-            project.currentThreshold
-        ];
-
-        if (!currentThreshold.voteSession.isVotingInSession) {
-            revert NotInVotingSession();
-        }
-
-        if (
-            thresholdVoteFromAddress[msg.sender][projectId][
-                project.currentThreshold
-            ]
-        ) {
-            revert CanOnlyVoteOnce();
-        }
-
-        VoteSession memory vs = currentThreshold.voteSession;
-        vote == true ? vs.positiveVotes++ : vs.negativeVotes++;
-
-        projectsThresholds[projectId][project.currentThreshold]
-            .voteSession = vs;
-        thresholdVoteFromAddress[msg.sender][projectId][
-            project.currentThreshold
-        ] = true;
-        voterArrayForThreshold[projectId][project.currentThreshold].push(
-            msg.sender
-        );
-    }
-
-    /**
-     * @notice Function that allows a project owner to withdraw the funds unlocked on his project
-     * @dev Can only be called when the contract is not Paused
-     * @param projectId The projet's ID
-     */
-    function withdrawFunds(
-        uint256 projectId
-    ) external virtual override whenNotPaused validProjectId(projectId) {
-        Project memory project = projects[projectId];
-        if (project.owner != msg.sender) {
-            revert NotProjectOwner();
-        }
-
-        uint256 amountToWithdraw = project.availableToWithdraw;
-
-        if (amountToWithdraw == 0) {
-            revert NoFundsToWithdraw();
-        }
-
-        address exchangeTokenAddress = project.exchangeTokenAddress;
-
-        project.availableToWithdraw = 0;
-        project.amountWithdrawn += amountToWithdraw;
-
-        projects[projectId] = project;
-
-        IERC20Upgradeable(exchangeTokenAddress).safeTransfer(
-            msg.sender,
-            amountToWithdraw
-        );
-
-        emit WithdrewFunds(
-            msg.sender,
-            projectId,
-            exchangeTokenAddress,
-            amountToWithdraw
-        );
-    }
-
-    /**
-     * @notice Function that returns the project data of a given projectId
-     * @param projectId ID of the project
-     * @return Project The data for the given project
-     */
-    function getProject(
-        uint256 projectId
-    )
-        external
-        view
-        virtual
-        override
-        validProjectId(projectId)
-        returns (Project memory)
-    {
-        return projects[projectId];
-    }
-
-    /**
-     * @notice Function that returns the project threshold of a given projectId and thresholdId
-     * @param projectId ID of the project
-     * @param thresholdId ID of the threshold
-     * @return Threshold the threshold for the given projectId && thresholdId
-     */
-    function getProjectThresholds(
-        uint256 projectId,
-        uint256 thresholdId
-    )
-        external
-        view
-        virtual
-        override
-        validProjectId(projectId)
-        validThresholdId(projectId, thresholdId)
-        returns (Threshold memory)
-    {
-        return projectsThresholds[projectId][thresholdId];
-    }
-
-    /**
-     * @notice Function that returns the amount donated from a donatorAddress in a given project
-     * @param donatorAddress address of the donator
-     * @param projectId ID of the project
-     * @return uint Donated amount
-     */
-    function getUserDonations(
-        address donatorAddress,
-        uint256 projectId
-    )
-        external
-        view
-        virtual
-        override
-        validProjectId(projectId)
-        returns (uint256)
-    {
-        return userDonations[donatorAddress][projectId];
-    }
-
-    /**
-     * @notice Function that returns if a donator has voted on a threshold
-     * @param voterAddress Address of the donator/voter
-     * @param projectId ID of the project
-     * @param thresholdId ID of the threshold
-     * @return boolean, Has voted ?
-     */
-    function getThresholdVoteFromAddress(
-        address voterAddress,
-        uint256 projectId,
-        uint256 thresholdId
-    )
-        external
-        view
-        virtual
-        override
-        validProjectId(projectId)
-        validThresholdId(projectId, thresholdId)
-        returns (bool)
-    {
-        return thresholdVoteFromAddress[voterAddress][projectId][thresholdId];
-    }
-
-    /**
-     * @notice Function that returns the amount of fees available to withdraw for a given ERC20 address
-     * @param tokenAddress Address of the ERC20 token
-     * @return uint Amount of available fees to withdraw
-     */
-    function getFeesAvailableToWithdraw(
-        address tokenAddress
-    ) external view virtual override returns (uint256) {
-        return availableFees[tokenAddress];
-    }
-
-    /**
      * @notice Function returning if a user is a donator or not
      * @param userAddress The User's address
      * @param projectId The Project's ID
@@ -637,6 +632,7 @@ contract Crowdfunding is
         }
         return supportedTokens[tokenAddress];
     }
+
 
     /**
      * @dev Function that checks if a threshold is reached for a given project and starts a vote if it is
@@ -724,23 +720,18 @@ contract Crowdfunding is
         currentThreshold.voteSession.positiveVotes = 0;
         currentThreshold.voteSession.negativeVotes = 0;
         currentThreshold.voteSession.isVotingInSession = false;
-        projectsThresholds[projectId][
-            project.currentThreshold
-        ] = currentThreshold;
+        projectsThresholds[projectId][project.currentThreshold] = currentThreshold;
 
         address[] memory tempVoterArrayForThreshold = voterArrayForThreshold[
             projectId
         ][project.currentThreshold];
-        uint256 length = voterArrayForThreshold[projectId][
-            project.currentThreshold
-        ].length;
+        uint256 length = voterArrayForThreshold[projectId][project.currentThreshold]
+            .length;
         address voter;
 
         for (uint256 i; i < length; ) {
             voter = tempVoterArrayForThreshold[i];
-            thresholdVoteFromAddress[voter][projectId][
-                project.currentThreshold
-            ] = false;
+            thresholdVoteFromAddress[voter][projectId][project.currentThreshold] = false;
             unchecked {
                 ++i;
             }
@@ -755,10 +746,14 @@ contract Crowdfunding is
         emit VoteSessionReset(projectId, project.currentThreshold, newCooldown);
     }
 
-    /**
-     * @dev This empty reserved space is put in place to allow future versions to add new
-     * variables without shifting down storage in the inheritance chain.
-     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
-     */
-    uint256[46] private __gap;
+    uint256 private myNewvariable;
+    uint256[45] private __gap;
+
+    function getMyNewvariable () public view returns (uint256) {
+        return myNewvariable;
+    }
+
+    function setMyNewvariable (uint newvar) public {
+        myNewvariable = newvar;
+    }
 }
