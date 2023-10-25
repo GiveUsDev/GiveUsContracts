@@ -662,6 +662,11 @@ contract Crowdfunding is
             projectsThresholds[projectId][project.currentThreshold]
                 .voteSession
                 .isVotingInSession = true;
+
+            emit VoteSessionStarted(
+                projectId,
+                project.currentThreshold
+            );
         }
     }
 

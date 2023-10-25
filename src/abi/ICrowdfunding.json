@@ -28,6 +28,7 @@
   "event ProjectStatusUpdated(uint256 indexed,bool indexed)",
   "event ProjectVoteCooldownUpdated(uint256 indexed,uint256 indexed)",
   "event VoteSessionReset(uint256 indexed,uint256 indexed,uint256 indexed)",
+  "event VoteSessionStarted(uint256 indexed,uint256 indexed)",
   "event WithdrewFees(address indexed,address indexed,uint256 indexed)",
   "event WithdrewFunds(address indexed,uint256 indexed,address indexed,uint256)",
   "function addNewSupportedToken(address)",

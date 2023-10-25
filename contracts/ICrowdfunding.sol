@@ -129,6 +129,16 @@ interface ICrowdfunding {
     );
 
     /**
+     * @notice Event emitted whenever a project's vote session is started
+     * @param projectId The project's ID
+     * @param projectThreshold The treshold for the project's vote session
+     */
+    event VoteSessionStarted(
+        uint256 indexed projectId,
+        uint256 indexed projectThreshold
+    );
+
+    /**
      * @notice Struct used to store a threshold
      * @param budget The amount of wei required to reach the threshold
      * @param voteSession The vote session for the threshold
