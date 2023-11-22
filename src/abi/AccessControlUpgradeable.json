@@ -1,5 +1,9 @@
 [
-  "event Initialized(uint8)",
+  "error AccessControlBadConfirmation()",
+  "error AccessControlUnauthorizedAccount(address,bytes32)",
+  "error InvalidInitialization()",
+  "error NotInitializing()",
+  "event Initialized(uint64)",
   "event RoleAdminChanged(bytes32 indexed,bytes32 indexed,bytes32 indexed)",
   "event RoleGranted(bytes32 indexed,address indexed,address indexed)",
   "event RoleRevoked(bytes32 indexed,address indexed,address indexed)",

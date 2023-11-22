@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.20;
 
-import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import {CountersUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ICrowdfunding} from "./ICrowdfunding.sol";
 
@@ -20,8 +19,7 @@ contract Crowdfunding is
     AccessControlUpgradeable,
     PausableUpgradeable
 {
-    using CountersUpgradeable for CountersUpgradeable.Counter;
-    using SafeERC20Upgradeable for IERC20Upgradeable;
+    using SafeERC20 for IERC20;
 
     /**
      * @dev The following constants are used by AccessControl to check authorisations.
@@ -34,7 +32,7 @@ contract Crowdfunding is
     bytes32 public constant WITHDRAWER_ROLE = keccak256("WITHDRAWER_ROLE");
 
     /// @dev  Counter used for project id
-    CountersUpgradeable.Counter private idCounter;
+    uint private idCounter;
 
     /// @dev  Mapping used to store if a token is supported (TokenAddress => bool)
     mapping(address => bool) private supportedTokens;
@@ -59,7 +57,7 @@ contract Crowdfunding is
     /// @dev Modifier used to check if id ProjectId is valid
     /// @param id ProjectId
     modifier validProjectId(uint256 id) {
-        if (idCounter.current() <= id) {
+        if (idCounter <= id) {
             revert InvalidProjectId();
         }
         _;
@@ -154,7 +152,7 @@ contract Crowdfunding is
             revert ZeroAddress();
         }
 
-        uint256 currentId = idCounter.current();
+        uint256 currentId = idCounter;
         projects[currentId] = Project(
             true,
             projectData.owner,
@@ -181,7 +179,7 @@ contract Crowdfunding is
             }
         }
 
-        idCounter.increment();
+        idCounter ++;
 
         emit ProjectCreated(currentId, projectData.owner, projectData.name);
     }
@@ -238,7 +236,7 @@ contract Crowdfunding is
 
         availableFees[tokenAddress] = 0;
 
-        IERC20Upgradeable(tokenAddress).safeTransfer(
+        IERC20(tokenAddress).safeTransfer(
             msg.sender,
             amountToWithdraw
         );
@@ -407,7 +405,7 @@ contract Crowdfunding is
         address tokenSupported = project.exchangeTokenAddress;
 
         if (
-            IERC20Upgradeable(tokenSupported).allowance(
+            IERC20(tokenSupported).allowance(
                 msg.sender,
                 address(this)
             ) < amount
@@ -433,7 +431,7 @@ contract Crowdfunding is
             projects[projectId].availableToWithdraw += donationAmount;
         }
 
-        IERC20Upgradeable(tokenSupported).safeTransferFrom(
+        IERC20(tokenSupported).safeTransferFrom(
             msg.sender,
             address(this),
             amount
@@ -512,7 +510,7 @@ contract Crowdfunding is
 
         projects[projectId] = project;
 
-        IERC20Upgradeable(exchangeTokenAddress).safeTransfer(
+        IERC20(exchangeTokenAddress).safeTransfer(
             msg.sender,
             amountToWithdraw
         );

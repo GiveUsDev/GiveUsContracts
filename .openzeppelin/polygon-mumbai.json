@@ -1,0 +1,1127 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0x84922fbF2816e6b390f34a04ef6bb292FAfcB6C4",
+    "txHash": "0x8648bd4a4d7328eb4c100152d3026595672d036fc18415c1feb0ccacf964547c"
+  },
+  "proxies": [
+    {
+      "address": "0x73F5ef71107406613eA4537cdbaa83d36e4a6283",
+      "txHash": "0x6c8114e401ea9d6b0a22acfc80a7cdf7d32a70bf13ef355fced4b21c932db6de",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x22Ff29B3B080377F3C693689DBC09c2381A2D0A8",
+      "txHash": "0x6f7060d38fb142ae536ceb965d1b0ee30c98f12e873054c6f167ffd4eb9c9d76",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xCFA5CE3a6f68B716342fa8074cC7eC7491c5B3CB",
+      "txHash": "0xcc3ddbbcc9d11b9fb22d5729787653ba3633b9ba9b59e43a97629e2e22e6b899",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x9fd7002A20f03a693Ac2b8dEd6E7Cea1A573F3E2",
+      "txHash": "0xc7f3f69138da3868a2b0a8335825697f354267ce54324905495359238ed92789",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xb5EaDFbe58a865057Ea27dab68918Cd9f71F6827",
+      "txHash": "0x45c1d4b65cbda6c946b74a62cccdf1cdbb61cccca129be7cbd7be06ac24d8df8",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xFb1dCBdE2F1e068C86F27E830Bc3E2c24Db6D196",
+      "txHash": "0xb8d0626b0cc29b9bb7ad9d88dd7581b7037e41c269dad6394d0331ce06e89695",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4566751C2d10f47F0258Cc013f1e0345405866bb",
+      "txHash": "0xbd7832f6598121e44aa3dba2f1756b4c0c02fec8692ba8d2100f28cddb59ad51",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x81733037279f37a0283092B59032CB3Bc5f90183",
+      "txHash": "0x53c0e5cdf0037eb42588da9fb6a2e64579be010f63243cc833c50b1b56dbbcec",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x25f7168753eD00b167C45b29934C0Df88c08De00",
+      "txHash": "0x2de8fe50be3b26b08cd7a171c4f6f9243ed4318a3ff73d6282467e6833f126c0",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x30c071b848D1e0329D8115DdA3c8f4461Ce3eB81",
+      "txHash": "0xd341676ff74668ff3a964ce4a5c2e38cc1b40928b62a1b250a33f9474a23f8b8",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xA8f20eFEC810BA9F2fe11b6c5b1BD43FBa0993Ce",
+      "txHash": "0x1396cc120ded31a61e72738e24b6d58c70f5dbf6b36b1f77480dc3c7cffc39d3",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x8bb60832b7476B701a0be132d37FA025B61446DB",
+      "txHash": "0xf2b07f091c8cb18c1183e90499aa0739c48d96452cde183a59ee966d82bb708b",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x87C0eA9077EfCf86CC543220C2A2062696cf4d67",
+      "txHash": "0x7f5a728323643cc01e78f6b7c9ac83bdbba9bf252422a7e5aaee0ccba0934527",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4653b143F50e3C512C62c03D558865Df5405afd3",
+      "txHash": "0x4676c51e78701701a18146fa19644057bb2c6ef5c292706a268b92194bbb1e05",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x682DF6acaB715f56A266DE637CB4A939672aB315",
+      "txHash": "0xa01e42577ddfbc2a5dc18ea147a080917d4a4472bdad5b2f7ccbb62f128ea0dd",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x3E8E045473f828B2818E0b24C18585c864328F66",
+      "txHash": "0x08d151b56f863aa8157f3a1e8da041f3987d292e6b44ab78097d6d426e1e37d5",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x66Ca72aaa3ec564ECf7e336f56F0b82401ccB8f2",
+      "txHash": "0xe2c47ccea18b9da4f2d645e6b9e6b582b8f7f56f09901ad1cb7bbb0949948851",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4631EbbBe06d06B2050520C8350e4cBA117271EF",
+      "txHash": "0xb91ad64615997e808e7336dd94b4a0e9758e6a018100249350cc26a2bdd94bdd",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xF6cba6B50c18C845DBEEd520f0738AbA45c0FFFF",
+      "txHash": "0xd86153e54758c1050c70d6aa34bdf0d12bc6a9d8c25a456bad50d7206cf61214",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xE781BDED3b9A280ff20865f236F85592e0bAb086",
+      "txHash": "0xaa2b4ef0e2abcfb70e3e8f82a73f36659601181a0bbdf34bfd00407b7c4ff4f2",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x462CF9465E5622b7599949921374ED8fc83B6339",
+      "txHash": "0x6538ee6b50d0062dbbf1f201234de684a0b079a6a9842101ff60439066865783",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x12cc24094406CD72B8F8Efae5af10E6C8B874b23",
+      "txHash": "0x012449d6ba9c753bddb9bb112ab170c2c4b949c558aa3c01fe301e275b594212",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x6edaF827C1E5C2Fc8BC233E6f178aD8Ff103a606",
+      "txHash": "0xf685f9a78688491c48cfa38b489d54ea5c43de937224972dd2333972d2717480",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x20A795Ca33C8334D72605936121fADbD288049D2",
+      "txHash": "0xdd205963af49485cb4e4a7881d0143ae9aa1b1e4264274b0f91391e8f1a8a31b",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x0B67246783Dac5d582029919470916bc4e154Ab8",
+      "txHash": "0x0656da3830a8aef08f56913e0184030bbea4e2a8e343faaaac606ab3b57165a6",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x6Fa68901C14eedFec947F8Fd8a9B73AfF876c2e9",
+      "txHash": "0xaa3477822aa3e5f5e51e2aa246a296f6cd387e2cd94553eb575e94552087033c",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x896B04f483d830F03ba0bABd92D1c0165D0a3AA8",
+      "txHash": "0x560d1463be0e7709007f7d0d427be269581e8d8525e4064a8d6cfca6c75185d0",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x602Fa15ae20E2e1496De40bf531ad2f2cB869294",
+      "txHash": "0x5caa3ff5021be8d334437bd21f0984de41874bf487b4e875644f1316794de806",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x2eF31f65E75f501E21a35F102C511663269b0721",
+      "txHash": "0xefe415ca2116040478d988f814110f358fe6e3bd5b96f0a75dce186c6f72e24a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xA72aC73667E5b21F0D64a741136c5460e2cc6e7A",
+      "txHash": "0x535e83bed7591aef0fb05207bf3588dd867d0f4af165876dd6aba3a097a805c2",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x123045881770F5086d66abCa9e31C66e457f2ee5",
+      "txHash": "0x129b18270f7b598b53435f5e4076d391d25a978e6d1c1a1c0fbf61ab49fef01a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xa2cdEe0b167c55e681CC3d381A57fbaeedcB79DA",
+      "txHash": "0x65d09547475aa7d30ceb4bdfc70b2163469f98dd768e62fc7ba6c82e62966f15",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x83ec0526B5878f4A17C4C5591F6B633356EB7B29",
+      "txHash": "0xf70ff1a9eec6d2ef34cf92f1ef7d7bd079b8c9d844f80da6d1e11e0de0812039",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x748097aC56F678ECA9B41DBA94594f57C5812884",
+      "txHash": "0xd15ee92193c9c4c88254fb840883883f5d8d588c9633d3aa15f0240daf4e7c02",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x338e22DB1F00CA96eAFaA086B02a9F1E1E499A59",
+      "txHash": "0xf378a1210b01c001e117d573981a2c79dadc8edc10e0c2ecb3b5fc950b661e09",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xb9b317A723713E7CECEeD2cf46b83e9A2Ca69aAe",
+      "txHash": "0xebfcc7a0b01a6f2de28b13566c5205941678a632b24de1355ef79203c53563b2",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x17456a6Fb1af6DA775c5f617222FAf50039C23c0",
+      "txHash": "0x8881b7afe992bb61c3a58b253f64040ee98f937100a77c5194321761179e7e09",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x600771b7B700a694bc35cB426F3D3aB74A38Fa43",
+      "txHash": "0x310215a99b007096d845de383f73aabee373b126b307d2defe890cdd0e5dc2d5",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4A3aEb51AF52A82Af3Ce1dE8969be15A45e8F3d7",
+      "txHash": "0x9ce2c52bb2cebea08019e7e83dd890b0e8736e324e14a8832157d9b730cbc52c",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x65b6D9Fd921E96784682166AEA30a28be4e0C6d0",
+      "txHash": "0x13f8b1a741da190705d4b5263cd3d36c5c8a667fb975aefa4540e1bd1d97d4bb",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x90ad8E09149e68Ae01C71b48768d53D5d7e2422A",
+      "txHash": "0xd5cf3a60f468d25ce863f4067fe83f6b9a283d00f765a50af510e4d4f3fb9f81",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x57F199E768501746776E1DEC80e5771163a4601A",
+      "txHash": "0xf37c94836e0b413888c7ce5c21ae82951daa80b414d5e72df008cdd409527373",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1F05004C9eF70F96541Cf81A9ED1169655C0eC3d",
+      "txHash": "0x45379d463eb5badee20c555ebe88e8b4f5b6fadfe8893176c46ce04d02996f7a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xb6bB8da646906ca0ED39eCFeC24264aA6de8215b",
+      "txHash": "0x59dc3bfc970f7c42c754e62c2ce34c876979d03622c71ddd2217d613e8a2a4ab",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1310338Da38f629e2aC825B2E67c3d5A02f150ee",
+      "txHash": "0x626f7dd363e4527c7a1151f34ca01b69a3e64bd3512fe0c681546b132b544013",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x829Ef47366fE9080Ed6A1869EB491C70B84A1670",
+      "txHash": "0xfd11169da12e42cc55adc27cab149df45b3ad67ca287019f473a1458e171cb67",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1B709c15F301c8ce3B1a72993529D8cC328D5220",
+      "txHash": "0x25baa61aa90e2960be7890923767940e847a09cb49d3d24d99329ff1febea840",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xCB670D50a35113B0D235893F77Beb69A553a4a43",
+      "txHash": "0xd27a88f4d45de14cd54add238f0805e3af4bbe46c9650e070bc59c0183d43c97",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x29785923760b19Ea1750d6aEC1F6b10A6d12E9c1",
+      "txHash": "0x2f0d8c77900fdbe44a57558599c67096860fee5d4cf0f3c21f12f62f38b45ead",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x2cD0716bFdeC684d64597ed05e7ae767bed3eB91",
+      "txHash": "0xbfd2007f80c39528284ba9895ffa5c7db1627a3e37540bc2618ac32cd96c9d8c",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xbD676E269e9C33dFD57EFae7a360Ff29bf6c19D1",
+      "txHash": "0x3d95fafd0d57402034eed33ff64ab2d8b8a8dcedea293606a1feb260798fa612",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xba882e61144FEe1Fe42D289657de12772009d9c9",
+      "txHash": "0x197763afff715b8ad146dad464221800d245f593c0a82b0bcc1e37c23f7bbc1a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xf6371D951DB311694bfb05825A76fa86DA1b129b",
+      "txHash": "0xf307c4d2e01ec2bc6070533f287a7d3a443e5d75cc4b673714e7dd400a0b8e6a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x0393C450C68Dad16F3aDEcf55A0E2427AdAD4645",
+      "txHash": "0x054ef77ab6061c8318d995242822e569af2d3d587452770b82c43204dd07fdf5",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1dacfBef14545dA32060195e0A48d9feFE404AEf",
+      "txHash": "0x6f13c75f7d36118ac9a9a8a9a17a65df49ee81c0aa5ddf02a6814368e11de59a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x8553866DB7Af189213ffcf011ebc1f77E995C47d",
+      "txHash": "0x674d28b2b03b30d9784b5637751dfc25cb0d930f70513a03eb8df154b3659332",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "bc2ec40b1945200eefa8c1909a0a6f6c69e5621ceac392ed663dbb2dc8315901": {
+      "address": "0xeaFf574af3F411Dd80767003A1C6bFC5515Dd187",
+      "txHash": "0x9ba1c70a70389ba8eb11aa2b7f50778bf8a0d000d72190c2fbca2309c716e6a4",
+      "layout": {
+        "solcVersion": "0.8.17",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC165Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol:41"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)34_storage)",
+            "contract": "AccessControlUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:61"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "AccessControlUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:259"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_bool",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:116"
+          },
+          {
+            "label": "idCounter",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_struct(Counter)1431_storage",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:37"
+          },
+          {
+            "label": "supportedTokens",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:40"
+          },
+          {
+            "label": "projects",
+            "offset": 0,
+            "slot": "203",
+            "type": "t_mapping(t_uint256,t_struct(Project)6670_storage)",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:42"
+          },
+          {
+            "label": "projectsThresholds",
+            "offset": 0,
+            "slot": "204",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Threshold)6611_storage))",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:45"
+          },
+          {
+            "label": "userDonations",
+            "offset": 0,
+            "slot": "205",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:48"
+          },
+          {
+            "label": "thresholdVoteFromAddress",
+            "offset": 0,
+            "slot": "206",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_bool)))",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:50"
+          },
+          {
+            "label": "voterArrayForThreshold",
+            "offset": 0,
+            "slot": "207",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_array(t_address)dyn_storage))",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:53"
+          },
+          {
+            "label": "availableFees",
+            "offset": 0,
+            "slot": "208",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:57"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "209",
+            "type": "t_array(t_uint256)46_storage",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:763"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)46_storage": {
+            "label": "uint256[46]",
+            "numberOfBytes": "1472"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_bool)))": {
+            "label": "mapping(address => mapping(uint256 => mapping(uint256 => bool)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)34_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_array(t_address)dyn_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => address[]))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(uint256 => mapping(uint256 => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Threshold)6611_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => struct ICrowdfunding.Threshold))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Project)6670_storage)": {
+            "label": "mapping(uint256 => struct ICrowdfunding.Project)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Threshold)6611_storage)": {
+            "label": "mapping(uint256 => struct ICrowdfunding.Threshold)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Counter)1431_storage": {
+            "label": "struct CountersUpgradeable.Counter",
+            "members": [
+              {
+                "label": "_value",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(Project)6670_storage": {
+            "label": "struct ICrowdfunding.Project",
+            "members": [
+              {
+                "label": "isActive",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "owner",
+                "type": "t_address",
+                "offset": 1,
+                "slot": "0"
+              },
+              {
+                "label": "exchangeTokenAddress",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "assoName",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "description",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "requiredAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "currentAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "availableToWithdraw",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "amountWithdrawn",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "currentThreshold",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "nbOfThresholds",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "requiredVotePercentage",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "voteCooldown",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "12"
+              },
+              {
+                "label": "currentVoteCooldown",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "13"
+              },
+              {
+                "label": "donationFee",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "14"
+              }
+            ],
+            "numberOfBytes": "480"
+          },
+          "t_struct(RoleData)34_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "members",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(Threshold)6611_storage": {
+            "label": "struct ICrowdfunding.Threshold",
+            "members": [
+              {
+                "label": "budget",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "voteSession",
+                "type": "t_struct(VoteSession)6618_storage",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(VoteSession)6618_storage": {
+            "label": "struct ICrowdfunding.VoteSession",
+            "members": [
+              {
+                "label": "isVotingInSession",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "positiveVotes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "negativeVotes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "6e87fc29e5325d8ce808410ed1324599b8a0e2ffe8edbd54f0a9902145086cc4": {
+      "address": "0x56D9bC8e6c2C7B097D651785E4972F943C84ceFE",
+      "txHash": "0xdfd27aaeef5cd3ba9fbf8cc963108e9cbacd0f1d83362146e5e011fd61a6b16e",
+      "layout": {
+        "solcVersion": "0.8.17",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC165Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol:41"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)34_storage)",
+            "contract": "AccessControlUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:61"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "AccessControlUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:259"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_bool",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:116"
+          },
+          {
+            "label": "idCounter",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_struct(Counter)1431_storage",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:37"
+          },
+          {
+            "label": "supportedTokens",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:40"
+          },
+          {
+            "label": "projects",
+            "offset": 0,
+            "slot": "203",
+            "type": "t_mapping(t_uint256,t_struct(Project)6697_storage)",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:42"
+          },
+          {
+            "label": "projectsThresholds",
+            "offset": 0,
+            "slot": "204",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Threshold)6638_storage))",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:45"
+          },
+          {
+            "label": "userDonations",
+            "offset": 0,
+            "slot": "205",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:48"
+          },
+          {
+            "label": "thresholdVoteFromAddress",
+            "offset": 0,
+            "slot": "206",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_bool)))",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:50"
+          },
+          {
+            "label": "voterArrayForThreshold",
+            "offset": 0,
+            "slot": "207",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_array(t_address)dyn_storage))",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:53"
+          },
+          {
+            "label": "availableFees",
+            "offset": 0,
+            "slot": "208",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:57"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "209",
+            "type": "t_array(t_uint256)46_storage",
+            "contract": "Crowdfunding",
+            "src": "contracts/Crowdfunding.sol:773"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)46_storage": {
+            "label": "uint256[46]",
+            "numberOfBytes": "1472"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_bool)))": {
+            "label": "mapping(address => mapping(uint256 => mapping(uint256 => bool)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)34_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_array(t_address)dyn_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => address[]))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(uint256 => mapping(uint256 => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Threshold)6638_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => struct ICrowdfunding.Threshold))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Project)6697_storage)": {
+            "label": "mapping(uint256 => struct ICrowdfunding.Project)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Threshold)6638_storage)": {
+            "label": "mapping(uint256 => struct ICrowdfunding.Threshold)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Counter)1431_storage": {
+            "label": "struct CountersUpgradeable.Counter",
+            "members": [
+              {
+                "label": "_value",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(Project)6697_storage": {
+            "label": "struct ICrowdfunding.Project",
+            "members": [
+              {
+                "label": "isActive",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "owner",
+                "type": "t_address",
+                "offset": 1,
+                "slot": "0"
+              },
+              {
+                "label": "exchangeTokenAddress",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "assoName",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "description",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "requiredAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "currentAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "availableToWithdraw",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "amountWithdrawn",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "currentThreshold",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "nbOfThresholds",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "requiredVotePercentage",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "voteCooldown",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "12"
+              },
+              {
+                "label": "currentVoteCooldown",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "13"
+              },
+              {
+                "label": "donationFee",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "14"
+              }
+            ],
+            "numberOfBytes": "480"
+          },
+          "t_struct(RoleData)34_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "members",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(Threshold)6638_storage": {
+            "label": "struct ICrowdfunding.Threshold",
+            "members": [
+              {
+                "label": "budget",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "voteSession",
+                "type": "t_struct(VoteSession)6645_storage",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(VoteSession)6645_storage": {
+            "label": "struct ICrowdfunding.VoteSession",
+            "members": [
+              {
+                "label": "isVotingInSession",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "positiveVotes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "negativeVotes",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,10 +4,22 @@ import 'solidity-coverage';
 import 'hardhat-abi-exporter';
 import 'hardhat-gas-reporter';
 import '@openzeppelin/hardhat-upgrades';
+const dotenv = require('dotenv');
+dotenv.config();
+
 
 const config: HardhatUserConfig = {
+  defaultNetwork: "hardhat",
+  networks: {
+    hardhat: {
+    },
+    polygon_mumbai: {
+      url: "https://rpc-mumbai.maticvigil.com",
+      accounts: [process.env.PRIVATE_KEY as string]
+    }
+  },
   solidity: {
-    version: "0.8.17",
+    version: "0.8.20",
     settings: {
       optimizer: {enabled: true}
     }

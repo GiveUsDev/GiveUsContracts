@@ -37,11 +37,9 @@ async function CreateProjects(crowdfunding: Crowdfunding, exchangeToken: string)
    const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com");
    const owner = new ethers.Wallet(String(process.env.PRIVATE_KEY), provider);
 
-   let result = await crowdfunding.createProject(SetupProjectData(owner.address, exchangeToken, ethers.utils.parseUnits("100000", 18), "Help Give Us", "GiveUs"), SetupTresholdData(ethers.utils.parseEther("100000")), { from: owner.address });
+   let result = await crowdfunding.createProject(SetupProjectData(owner.address, exchangeToken, ethers.utils.parseUnits("12000", 18), "Desa'a Forest", "Orga Name"), SetupTresholdData(ethers.utils.parseEther("12000")), { from: owner.address });
    await result.wait();
    console.log("Created project 1");
-
-   /*
    result = await crowdfunding.createProject(SetupProjectData(owner.address, exchangeToken, ethers.utils.parseUnits("500000", 18), 'Fight against deforestation', "Orga Name"), SetupTresholdData(ethers.utils.parseEther("500000")), { from: owner.address });
    await result.wait();
    console.log("Created project 2");
@@ -74,7 +72,7 @@ async function CreateProjects(crowdfunding: Crowdfunding, exchangeToken: string)
    console.log("Created project 11");
    result = await crowdfunding.createProject(SetupProjectData(owner.address, exchangeToken, ethers.utils.parseUnits("200000", 18), 'Clean water', "Orga Name"), SetupTresholdData(ethers.utils.parseEther("200000")), { from: owner.address });
    await result.wait();
-   console.log("Created project 12");*/
+   console.log("Created project 12");
 }
 
 function SetupProjectData(owner: string, exchangeToken: string, requiredAmountToFund: BigNumber, name: string, assoName: string) {
@@ -101,7 +99,7 @@ function SetupTresholdData(requiredAmountToFund: BigNumber) {
       negativeVotes: 0,
    }
 
-   const amount: BigNumber = requiredAmountToFund.div(10);
+   const amount: BigNumber = requiredAmountToFund.div(5);
 
    const treshold1: ICrowdfunding.ThresholdStruct = {
       budget: amount,
@@ -128,32 +126,7 @@ function SetupTresholdData(requiredAmountToFund: BigNumber) {
       voteSession: voteSession
    }
 
-   const treshold6: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(6),
-      voteSession: voteSession
-   }
-
-   const treshold7: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(7),
-      voteSession: voteSession
-   }
-
-   const treshold8: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(8),
-      voteSession: voteSession
-   }
-
-   const treshold9: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(9),
-      voteSession: voteSession
-   }
-
-   const treshold10: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(10),
-      voteSession: voteSession
-   }
-
-   const tresholds: ICrowdfunding.ThresholdStruct[] = [treshold1, treshold2, treshold3, treshold4, treshold5, treshold6, treshold7, treshold8, treshold9, treshold10];
+   const tresholds: ICrowdfunding.ThresholdStruct[] = [treshold1, treshold2, treshold3, treshold4, treshold5];
 
    return tresholds;
 }
