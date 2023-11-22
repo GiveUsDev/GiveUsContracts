@@ -1,10 +1,9 @@
 import { ethers, upgrades } from "hardhat";
-import { BigNumber } from "ethers";
 import { Crowdfunding, ICrowdfunding } from "../typechain-types";
 
 
 async function main() {
-   const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com");
+   const provider = new ethers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com");
    const owner = new ethers.Wallet(String(process.env.PRIVATE_KEY), provider);
 
    const V1Contract = await ethers.getContractFactory("Crowdfunding");
@@ -12,32 +11,36 @@ async function main() {
    const v1Contract = await upgrades.deployProxy(V1Contract, [], {
       initializer: "initialize",
    });
-   await v1Contract.deployed();
-   console.log("V1 Contract deployed to:", v1Contract.address);
+   await v1Contract.waitForDeployment();
+   console.log("V1 Contract deployed to:", await v1Contract.getAddress());
 
    const USDC = await ethers.getContractFactory("USDC");
    const usdc = await USDC.deploy();
-   await usdc.deployed();
+   await usdc.waitForDeployment();
 
-   console.log("USDC ADDRESS : " + usdc.address);
+   console.log("USDC ADDRESS : " + await usdc.getAddress());
 
-   const mintAmount = ethers.utils.parseUnits("1000000", 18);
+   const mintAmount = ethers.parseUnits("1000000", 18);
    let result = await usdc.connect(owner).mint(mintAmount);
    await result.wait();
    console.log("Minted 1000000 USDC");
 
-   result = await v1Contract.addNewSupportedToken(usdc.address, { from: owner.address });
+   result = await v1Contract.addNewSupportedToken(await usdc.getAddress(), { from: owner.address });
    await result.wait();
    console.log("Added USDC to supported tokens");
 
-   await CreateProjects(v1Contract as Crowdfunding, usdc.address);
+   let result2 = await v1Contract.createProject(SetupProjectData(owner.address,  await usdc.getAddress(), ethers.parseUnits("100000", 18), "Help Give Us", "GiveUs"), SetupTresholdData(ethers.parseEther("100000")), { from: owner.address });
+   await result.wait();
+   console.log("Created project 1");
+
+   //await CreateProjects(v1Contract as Crowdfunding, await usdc.getAddress());
 }
 
 async function CreateProjects(crowdfunding: Crowdfunding, exchangeToken: string) {
-   const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com");
+   const provider = new ethers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com");
    const owner = new ethers.Wallet(String(process.env.PRIVATE_KEY), provider);
 
-   let result = await crowdfunding.createProject(SetupProjectData(owner.address, exchangeToken, ethers.utils.parseUnits("100000", 18), "Help Give Us", "GiveUs"), SetupTresholdData(ethers.utils.parseEther("100000")), { from: owner.address });
+   let result = await crowdfunding.createProject(SetupProjectData(owner.address, exchangeToken, ethers.parseUnits("100000", 18), "Help Give Us", "GiveUs"), SetupTresholdData(ethers.parseEther("100000")), { from: owner.address });
    await result.wait();
    console.log("Created project 1");
 
@@ -77,7 +80,7 @@ async function CreateProjects(crowdfunding: Crowdfunding, exchangeToken: string)
    console.log("Created project 12");*/
 }
 
-function SetupProjectData(owner: string, exchangeToken: string, requiredAmountToFund: BigNumber, name: string, assoName: string) {
+function SetupProjectData(owner: string, exchangeToken: string, requiredAmountToFund: bigint, name: string, assoName: string) {
    let projectData = {
       owner: owner,
       exchangeTokenAddress: exchangeToken,
@@ -93,7 +96,7 @@ function SetupProjectData(owner: string, exchangeToken: string, requiredAmountTo
    return projectData;
 }
 
-function SetupTresholdData(requiredAmountToFund: BigNumber) {
+function SetupTresholdData(requiredAmountToFund: bigint) {
 
    const voteSession: ICrowdfunding.VoteSessionStruct = {
       isVotingInSession: false,
@@ -101,7 +104,7 @@ function SetupTresholdData(requiredAmountToFund: BigNumber) {
       negativeVotes: 0,
    }
 
-   const amount: BigNumber = requiredAmountToFund.div(10);
+   const amount: bigint = requiredAmountToFund / 10n;
 
    const treshold1: ICrowdfunding.ThresholdStruct = {
       budget: amount,
@@ -109,47 +112,47 @@ function SetupTresholdData(requiredAmountToFund: BigNumber) {
    }
 
    const treshold2: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(2),
+      budget: amount * 2n,
       voteSession: voteSession
    }
 
    const treshold3: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(3),
+      budget: amount* 3n,
       voteSession: voteSession
    }
 
    const treshold4: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(4),
+      budget: amount* 4n,
       voteSession: voteSession
    }
 
    const treshold5: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(5),
+      budget: amount* 5n,
       voteSession: voteSession
    }
 
    const treshold6: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(6),
+      budget: amount* 6n,
       voteSession: voteSession
    }
 
    const treshold7: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(7),
+      budget: amount* 7n,
       voteSession: voteSession
    }
 
    const treshold8: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(8),
+      budget: amount* 8n,
       voteSession: voteSession
    }
 
    const treshold9: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(9),
+      budget: amount* 9n,
       voteSession: voteSession
    }
 
    const treshold10: ICrowdfunding.ThresholdStruct = {
-      budget: amount.mul(10),
+      budget: amount* 10n,
       voteSession: voteSession
    }
 
