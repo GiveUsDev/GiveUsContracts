@@ -430,8 +430,8 @@ describe("Crowdfunding Contract", function () {
       });
 
       it("should not unpause not paused, revert : Pausable: not paused", async () => {
-        const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
-        await expectRevert(crowdfunding.unpause({ from: owner.address }), "Pausable: not paused");
+        const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
+        await expect(crowdfunding.unpause()).to.be.revertedWithCustomError(Crowdfunding, "ExpectedPause");
       });
 
       it("should unpause", async () => {
@@ -449,9 +449,9 @@ describe("Crowdfunding Contract", function () {
       });
 
       it("Should not create project, revert : Paused", async function () {
-        const { crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
-        await crowdfunding.pause({ from: owner.address });
-        await expectRevert(crowdfunding.createProject(projectData, thresholds, { from: owner.address }), "Pausable: paused");
+        const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds } = await loadFixture(createProjectDataAndUSDCFixture);
+        await crowdfunding.pause();
+        await expect(crowdfunding.createProject(projectData, thresholds)).to.be.revertedWithCustomError(Crowdfunding, "EnforcedPause");
       });
 
       it("Should not create project, revert : Token not supported", async function () {
@@ -580,9 +580,9 @@ describe("Crowdfunding Contract", function () {
       });
 
       it("Should not withdrawFees, revert : Paused", async function () {
-        const { crowdfunding, owner, addr1, addr2, projectData, thresholds, usdc } = await loadFixture(createProjectAndFundFixture);
-        await crowdfunding.pause({ from: owner.address });
-        await expectRevert(crowdfunding.withdrawFees(await usdc.getAddress(), { from: owner.address }), "Pausable: paused");
+        const {Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, usdc } = await loadFixture(createProjectAndFundFixture);
+        await crowdfunding.pause();
+        await expect(crowdfunding.withdrawFees(await usdc.getAddress())).to.be.revertedWithCustomError(Crowdfunding, "EnforcedPause");
       });
 
       it("Should not withdrawFees, revert : ZeroAddress ", async function () {
@@ -619,8 +619,8 @@ describe("Crowdfunding Contract", function () {
     describe("donateToProject(uint id, uint amount)", function () {
       it("Shouldnt donate, revert : Paused", async function () {
         const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
-        await crowdfunding.pause({ from: owner.address });
-        await expectRevert(crowdfunding.donateToProject(0, 10), "Pausable: paused");
+        await crowdfunding.pause();
+        await expect(crowdfunding.donateToProject(0, 10)).to.be.revertedWithCustomError(Crowdfunding, "EnforcedPause");
       });
       it("Shouldnt donate, revert : Invalid Project Id", async function () {
         const { Crowdfunding, crowdfunding, owner, addr1, addr2, projectData, thresholds, emptyThresholds, USDC, usdc } = await loadFixture(createProjectDataAndUSDCFixture);
@@ -745,7 +745,7 @@ describe("Crowdfunding Contract", function () {
       it("Shouldnt vote, revert : Paused", async function () {
         const { Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
         await crowdfunding.pause();
-        await expectRevert(crowdfunding.voteForThreshold(projectID, true, { from: owner.address }), "Pausable: paused");
+        await expect(crowdfunding.voteForThreshold(projectID, true)).to.be.revertedWithCustomError(Crowdfunding, "EnforcedPause");
       });
       it("Shouldnt vote, revert : Only Donators can vote", async function () {
         const { Crowdfunding, crowdfunding, addr1, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
@@ -781,9 +781,9 @@ describe("Crowdfunding Contract", function () {
     });
     describe("endThresholdVoting(uint256 id)", function () {
       it("Shouldnt end voting, revert : Paused", async function () {
-        const { crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
+        const {Crowdfunding, crowdfunding, owner, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
         await crowdfunding.pause();
-        await expectRevert(crowdfunding.endThresholdVoting(projectID, { from: owner.address }), "Pausable: paused");
+        await expect(crowdfunding.endThresholdVoting(projectID)).to.be.revertedWithCustomError(Crowdfunding, "EnforcedPause");
       });
       it("Shouldnt end voting, revert : InvalidProjectId", async function () {
         const { crowdfunding, Crowdfunding, projectID } = await loadFixture(createProjectAndStartedVotingFixture);
@@ -885,7 +885,7 @@ describe("Crowdfunding Contract", function () {
       it("Shouldnt withdrawFunds, revert : Paused", async function () {
         const { Crowdfunding, crowdfunding, usdc, projectID } = await loadFixture(createProjectAndDonateFixture);
         await crowdfunding.pause();
-        await expectRevert(crowdfunding.withdrawFunds(projectID), "Pausable: paused");
+        await expect(crowdfunding.withdrawFunds(projectID)).to.be.revertedWithCustomError(Crowdfunding, "EnforcedPause");
       });
 
       it("Shouldnt withdrawFunds, revert : No Funds to withdraw", async function () {
@@ -899,8 +899,8 @@ describe("Crowdfunding Contract", function () {
       });
 
       it("Shouldnt withdrawFunds, revert : NotProjectOwner", async function () {
-        const { Crowdfunding, crowdfunding, addr1, projectID } = await loadFixture(createProjectAndDonateFixture);
-        await expect(crowdfunding.withdrawFunds(projectID)).to.be.revertedWithCustomError(Crowdfunding, 'NotProjectOwner');
+        const { Crowdfunding, crowdfunding, addr1, projectID } = await loadFixture(createProjectAndFundFixture);
+        await expect(crowdfunding.connect(addr1).withdrawFunds(projectID)).to.be.revertedWithCustomError(Crowdfunding, 'NotProjectOwner');
       });
 
       it("Should withdrawFunds", async function () {
