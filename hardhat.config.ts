@@ -24,6 +24,10 @@ const config: HardhatUserConfig = {
       optimizer: {enabled: true}
     }
   },
+  defender: {
+    apiKey: process.env.DEFENDER_KEY as string,
+    apiSecret: process.env.DEFENDER_SECRET as string,
+  },
   abiExporter: {
     path: './src/abi',
     runOnCompile: true,

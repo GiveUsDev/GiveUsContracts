@@ -10,7 +10,7 @@ describe("Crowdfunding Contract", function () {
     const Crowdfunding = await ethers.getContractFactory("Crowdfunding");
     const [owner, addr1, addr2] = await ethers.getSigners();
 
-    const crowdfundingProxy = await upgrades.deployProxy(Crowdfunding, { initializer: 'initialize' });
+    const crowdfundingProxy = await upgrades.deployProxy(Crowdfunding, [owner.address], { initializer: 'initialize' });
 
     await crowdfundingProxy.waitForDeployment();
 
@@ -374,7 +374,7 @@ describe("Crowdfunding Contract", function () {
     describe("Initializer", function () {
       it("Should not initalize twice", async function () {
         const { owner, crowdfunding, Crowdfunding } = await loadFixture(deployCrowdfundingFixture);
-        await expect(crowdfunding.initialize()).to.be.revertedWithCustomError(Crowdfunding, "InvalidInitialization");
+        await expect(crowdfunding.initialize(owner.address)).to.be.revertedWithCustomError(Crowdfunding, "InvalidInitialization");
       });
     });
     describe("USDC mint(uint amount)", function () {

@@ -6,6 +6,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {ICrowdfunding} from "./ICrowdfunding.sol";
 
 /**
@@ -16,6 +17,7 @@ import {ICrowdfunding} from "./ICrowdfunding.sol";
 contract Crowdfunding is
     ICrowdfunding,
     Initializable,
+    UUPSUpgradeable,
     AccessControlUpgradeable,
     PausableUpgradeable
 {
@@ -30,6 +32,8 @@ contract Crowdfunding is
     bytes32 public constant UPDATER_ROLE = keccak256("UPDATER_ROLE");
     /// @notice The WITHDRAWER_ROLE allows an account to withdraw the fees funds from the contract.
     bytes32 public constant WITHDRAWER_ROLE = keccak256("WITHDRAWER_ROLE");
+    /// @notice The UPGRADER_ROLE allows an account to Upgrade the contract.
+    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
     /// @dev  Counter used for project id
     uint private idCounter;
@@ -85,15 +89,18 @@ contract Crowdfunding is
 
     /**
      * @notice Initializer used to set the default roles and initialise Access Control and Pausable
-     * @dev Grants `DEFAULT_ADMIN_ROLE`, `PAUSER_ROLE`, `UPDATER_ROLE` and `WITHDRAWER_ROLE` to the msg.sender
+     * @dev Grants `DEFAULT_ADMIN_ROLE`, `PAUSER_ROLE`, `UPDATER_ROLE`, 'UPGRADER_ROLE' and `WITHDRAWER_ROLE` to the multisig
      */
-    function initialize() external initializer {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(PAUSER_ROLE, msg.sender);
-        _grantRole(UPDATER_ROLE, msg.sender);
-        _grantRole(WITHDRAWER_ROLE, msg.sender);
+    function initialize(address multisig) external initializer {
+        __UUPSUpgradeable_init();
         __AccessControl_init();
         __Pausable_init();
+
+        _grantRole(DEFAULT_ADMIN_ROLE, multisig);
+        _grantRole(PAUSER_ROLE, multisig);
+        _grantRole(UPDATER_ROLE, multisig);
+        _grantRole(WITHDRAWER_ROLE, multisig);
+        _grantRole(UPGRADER_ROLE, multisig);
     }
 
     /**
@@ -763,10 +770,6 @@ contract Crowdfunding is
         emit VoteSessionReset(projectId, project.currentThreshold, newCooldown);
     }
 
-    /**
-     * @dev This empty reserved space is put in place to allow future versions to add new
-     * variables without shifting down storage in the inheritance chain.
-     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
-     */
-    uint256[46] private __gap;
+    /// @dev Upgrades the implementation of the proxy to new address.
+    function _authorizeUpgrade(address) internal override onlyRole(UPGRADER_ROLE) {}
 }
