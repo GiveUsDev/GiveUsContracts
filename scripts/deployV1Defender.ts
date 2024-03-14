@@ -9,10 +9,12 @@ async function main() {
     throw new Error(`Upgrade approval process with id ${upgradeApprovalProcess.approvalProcessId} has no assigned address`);
   }
 
-  const deployment = await defender.deployProxy(Crowdfunding, [upgradeApprovalProcess.address], { initializer: "initialize" });
+  const adminAddress = upgradeApprovalProcess.address;
+  console.log(`Admin address: ${adminAddress}`);
+  const deployment = await defender.deployProxy(Crowdfunding, [adminAddress], { initializer: "initialize" });
 
+  console.log(`Deploying Crowdfunding V1 to upgrade approval process ${upgradeApprovalProcess.approvalProcessId}...`);
   await deployment.waitForDeployment();
-
   console.log(`Contract deployed to ${await deployment.getAddress()}`);
 }
 
